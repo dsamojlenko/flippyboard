@@ -1,0 +1,1195 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Split-Flap Display</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@600;700&family=Azeret+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --board-bg: #1c1c1e;
+  --tile-bg-upper: #2f2f33;
+  --tile-bg-lower: #292930;
+  --tile-radius: 3px;
+  --char-color: #e0c35a;
+  --char-glow: rgba(224, 195, 90, 0.08);
+  --split-line: rgba(0,0,0,0.6);
+  --bezel: #232327;
+  --bezel-edge: #3a3a40;
+  --panel-bg: #1e1e22;
+  --panel-border: #333338;
+  --accent: #d4a843;
+  --accent-dim: rgba(212, 168, 67, 0.3);
+  --text: #c8c8cc;
+  --text-dim: #77777d;
+  --danger: #c44;
+  --flip-speed: 55ms;
+  --col-delay: 28ms;
+  --row-delay: 18ms;
+  --tile-gap: 3px;
+  --font-flap: 'Chakra Petch', 'Arial Narrow', sans-serif;
+  --font-ui: 'Azeret Mono', 'Courier New', monospace;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html, body {
+  height: 100%;
+  background: linear-gradient(145deg, #111114 0%, #18181c 40%, #14141a 100%);
+  color: var(--text);
+  font-family: var(--font-ui);
+  font-size: 13px;
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+}
+
+body {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-height: 100vh;
+  padding: 20px 16px;
+}
+
+/* ── Toolbar ── */
+.toolbar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  max-width: 1200px;
+  margin-bottom: 16px;
+  padding: 0 4px;
+}
+
+.toolbar-title {
+  font-family: var(--font-flap);
+  font-weight: 700;
+  font-size: 15px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin-right: auto;
+  opacity: 0.9;
+}
+
+.toolbar-btn {
+  background: rgba(255,255,255,0.04);
+  border: 1px solid var(--panel-border);
+  color: var(--text-dim);
+  font-family: var(--font-ui);
+  font-size: 11px;
+  padding: 6px 12px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.15s;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  white-space: nowrap;
+}
+.toolbar-btn:hover { background: rgba(255,255,255,0.08); color: var(--text); border-color: #555; }
+.toolbar-btn.active { color: var(--accent); border-color: var(--accent-dim); background: rgba(212,168,67,0.08); }
+.toolbar-btn svg { width: 14px; height: 14px; fill: currentColor; }
+
+/* ── Board Frame ── */
+.board-frame {
+  background: var(--bezel);
+  border: 1px solid var(--bezel-edge);
+  border-radius: 10px;
+  padding: 18px;
+  box-shadow:
+    0 2px 8px rgba(0,0,0,0.5),
+    0 12px 40px rgba(0,0,0,0.4),
+    inset 0 1px 0 rgba(255,255,255,0.04);
+  position: relative;
+  overflow: hidden;
+}
+
+.board-frame::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 10px;
+  background: linear-gradient(180deg, rgba(255,255,255,0.015) 0%, transparent 40%);
+  pointer-events: none;
+}
+
+.board-inner {
+  background: var(--board-bg);
+  border-radius: 5px;
+  padding: 10px;
+  box-shadow: inset 0 2px 6px rgba(0,0,0,0.5);
+}
+
+.board {
+  display: grid;
+  gap: var(--tile-gap);
+  justify-content: center;
+}
+
+/* ── Tile ── */
+.tile {
+  position: relative;
+  width: var(--tw);
+  height: var(--th);
+  perspective: 250px;
+  font-family: var(--font-flap);
+  font-weight: 700;
+}
+
+.half, .flap {
+  position: absolute;
+  left: 0;
+  width: 100%;
+  height: 50%;
+  overflow: hidden;
+  backface-visibility: hidden;
+}
+
+.half.upper {
+  top: 0;
+  background: var(--tile-bg-upper);
+  border-radius: var(--tile-radius) var(--tile-radius) 0 0;
+  border-bottom: 1px solid var(--split-line);
+}
+
+.half.lower {
+  top: 50%;
+  background: var(--tile-bg-lower);
+  border-radius: 0 0 var(--tile-radius) var(--tile-radius);
+  border-top: 1px solid rgba(255,255,255,0.02);
+}
+
+.half .ch, .flap .ch {
+  position: absolute;
+  left: 0;
+  width: 100%;
+  height: 200%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: calc(var(--th) * 0.68);
+  color: var(--char-color);
+  text-shadow: 0 0 8px var(--char-glow);
+  user-select: none;
+  line-height: 1;
+}
+
+.half.upper .ch { top: 0; }
+.half.lower .ch { bottom: 0; }
+
+/* ── Flaps (animated) ── */
+.flap {
+  display: none;
+  will-change: transform;
+  pointer-events: none;
+  z-index: 2;
+}
+
+.flap-top {
+  top: 0;
+  transform-origin: center bottom;
+  background: var(--tile-bg-upper);
+  border-radius: var(--tile-radius) var(--tile-radius) 0 0;
+  border-bottom: 1px solid var(--split-line);
+}
+
+.flap-bottom {
+  top: 50%;
+  transform-origin: center top;
+  background: var(--tile-bg-lower);
+  border-radius: 0 0 var(--tile-radius) var(--tile-radius);
+}
+
+.flap-top .ch { top: 0; }
+.flap-bottom .ch { bottom: 0; }
+
+.flap-top.flip {
+  display: block;
+  animation: flap-out var(--flip-speed) ease-in forwards;
+}
+
+.flap-bottom.flip {
+  display: block;
+  animation: flap-in var(--flip-speed) ease-out forwards;
+}
+
+@keyframes flap-out {
+  0%   { transform: rotateX(0deg); }
+  100% { transform: rotateX(90deg); }
+}
+
+@keyframes flap-in {
+  0%   { transform: rotateX(-90deg); }
+  100% { transform: rotateX(0deg); box-shadow: 0 2px 4px rgba(0,0,0,0.3); }
+}
+
+/* ── Panel ── */
+.panel {
+  width: 100%;
+  max-width: 1200px;
+  margin-top: 20px;
+}
+
+.tabs {
+  display: flex;
+  gap: 2px;
+  margin-bottom: 0;
+}
+
+.tab {
+  font-family: var(--font-ui);
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  padding: 10px 18px;
+  background: rgba(255,255,255,0.02);
+  border: 1px solid var(--panel-border);
+  border-bottom: none;
+  border-radius: 6px 6px 0 0;
+  color: var(--text-dim);
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.tab:hover { background: rgba(255,255,255,0.05); color: var(--text); }
+.tab.active {
+  background: var(--panel-bg);
+  color: var(--accent);
+  border-color: var(--panel-border);
+  position: relative;
+}
+.tab.active::after {
+  content: '';
+  position: absolute;
+  bottom: -1px;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: var(--panel-bg);
+}
+
+.tab-content {
+  background: var(--panel-bg);
+  border: 1px solid var(--panel-border);
+  border-radius: 0 6px 6px 6px;
+  padding: 20px;
+  min-height: 140px;
+}
+
+.tab-pane { display: none; }
+.tab-pane.active { display: block; }
+
+/* ── Form elements ── */
+textarea, input[type="text"], input[type="number"], select {
+  background: rgba(0,0,0,0.3);
+  border: 1px solid var(--panel-border);
+  border-radius: 4px;
+  color: var(--text);
+  font-family: var(--font-ui);
+  font-size: 12px;
+  padding: 8px 10px;
+  outline: none;
+  transition: border-color 0.15s;
+  width: 100%;
+}
+textarea:focus, input:focus, select:focus { border-color: var(--accent-dim); }
+
+textarea {
+  resize: vertical;
+  min-height: 70px;
+  line-height: 1.5;
+}
+
+label {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--text-dim);
+  margin-bottom: 6px;
+  display: block;
+}
+
+.btn {
+  font-family: var(--font-ui);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  padding: 8px 20px;
+  border: 1px solid var(--accent-dim);
+  background: rgba(212,168,67,0.1);
+  color: var(--accent);
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.btn:hover { background: rgba(212,168,67,0.2); border-color: var(--accent); }
+.btn:active { transform: scale(0.97); }
+
+.btn-sm {
+  padding: 5px 12px;
+  font-size: 10px;
+}
+
+.btn-danger {
+  border-color: rgba(204,68,68,0.3);
+  background: rgba(204,68,68,0.1);
+  color: var(--danger);
+}
+.btn-danger:hover { background: rgba(204,68,68,0.2); border-color: var(--danger); }
+
+.row { display: flex; gap: 12px; align-items: flex-end; }
+.row > * { flex: 1; }
+
+.inline-row { display: flex; gap: 8px; align-items: center; margin-top: 10px; }
+
+/* ── Alignment toggles ── */
+.align-group {
+  display: flex;
+  gap: 0;
+}
+.align-group .align-btn {
+  background: rgba(255,255,255,0.03);
+  border: 1px solid var(--panel-border);
+  color: var(--text-dim);
+  font-family: var(--font-ui);
+  font-size: 11px;
+  padding: 5px 10px;
+  cursor: pointer;
+  transition: all 0.15s;
+  line-height: 1;
+}
+.align-group .align-btn:first-child { border-radius: 4px 0 0 4px; }
+.align-group .align-btn:last-child { border-radius: 0 4px 4px 0; }
+.align-group .align-btn:not(:first-child) { border-left: none; }
+.align-group .align-btn:hover { background: rgba(255,255,255,0.06); color: var(--text); }
+.align-group .align-btn.active {
+  background: rgba(212,168,67,0.12);
+  color: var(--accent);
+  border-color: var(--accent-dim);
+}
+.align-group .align-btn.active + .align-btn { border-left-color: var(--accent-dim); }
+.align-group .align-btn svg { width: 14px; height: 14px; fill: currentColor; display: block; }
+
+.align-controls {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+  margin-top: 10px;
+}
+.align-controls label { margin: 0; }
+
+/* ── Config Row ── */
+.config-row {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+  padding: 12px 16px;
+  background: rgba(0,0,0,0.15);
+  border-radius: 6px;
+  margin-top: 12px;
+}
+.config-row label { margin: 0; white-space: nowrap; }
+.config-row input[type="number"] { width: 60px; text-align: center; }
+
+/* ── Queue list ── */
+.queue-list {
+  list-style: none;
+  margin-top: 12px;
+  max-height: 150px;
+  overflow-y: auto;
+}
+.queue-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 10px;
+  background: rgba(0,0,0,0.15);
+  border-radius: 4px;
+  margin-bottom: 4px;
+  font-size: 12px;
+}
+.queue-item .msg { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--text); }
+.queue-item .idx { color: var(--text-dim); font-size: 10px; min-width: 20px; }
+.queue-item .remove { cursor: pointer; color: var(--text-dim); font-size: 14px; padding: 0 4px; }
+.queue-item .remove:hover { color: var(--danger); }
+
+/* ── API pane ── */
+.code-block {
+  background: rgba(0,0,0,0.35);
+  border: 1px solid var(--panel-border);
+  border-radius: 4px;
+  padding: 12px 14px;
+  font-family: var(--font-ui);
+  font-size: 11px;
+  line-height: 1.6;
+  color: #a8a8b0;
+  overflow-x: auto;
+  white-space: pre;
+  margin-top: 8px;
+}
+.code-block .kw { color: var(--accent); }
+.code-block .str { color: #7ec87e; }
+.code-block .cmt { color: #666; }
+
+.api-section { margin-bottom: 16px; }
+.api-section h4 { font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-dim); margin-bottom: 4px; }
+
+/* ── Scrollbar ── */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: #444; border-radius: 3px; }
+
+/* ── Fullscreen overrides ── */
+:fullscreen body, :-webkit-full-screen body {
+  justify-content: center;
+}
+:fullscreen .panel, :-webkit-full-screen .panel,
+:fullscreen .toolbar-title, :-webkit-full-screen .toolbar-title { display: none; }
+
+/* ── Responsive ── */
+@media (max-width: 640px) {
+  body { padding: 10px 8px; }
+  .board-frame { padding: 10px; }
+  .tab { padding: 8px 12px; font-size: 10px; }
+  .tab-content { padding: 14px; }
+}
+</style>
+</head>
+<body>
+
+<div class="toolbar">
+  <span class="toolbar-title">Split-Flap</span>
+  <button class="toolbar-btn" id="btn-sound" title="Toggle sound">
+    <svg viewBox="0 0 24 24"><path id="sound-icon" d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/></svg>
+    <span>Sound</span>
+  </button>
+  <button class="toolbar-btn" id="btn-fullscreen" title="Fullscreen">
+    <svg viewBox="0 0 24 24"><path d="M7 14H5v5h5v-2H7v-3zm-2-4h2V7h3V5H5v5zm12 7h-3v2h5v-5h-2v3zM14 5v2h3v3h2V5h-5z"/></svg>
+    <span>Fullscreen</span>
+  </button>
+</div>
+
+<div class="board-frame">
+  <div class="board-inner">
+    <div class="board" id="board"></div>
+  </div>
+</div>
+
+<div class="panel">
+  <div class="tabs">
+    <button class="tab active" data-tab="text">Text</button>
+    <button class="tab" data-tab="clock">Clock</button>
+    <button class="tab" data-tab="queue">Queue</button>
+    <button class="tab" data-tab="api">API</button>
+  </div>
+
+  <div class="tab-content">
+    <!-- TEXT -->
+    <div class="tab-pane active" id="pane-text">
+      <label>Message <span style="color:var(--text-dim);text-transform:none;font-size:10px;letter-spacing:0">&mdash; use Enter for new lines, Cmd+Enter to send</span></label>
+      <textarea id="text-input" placeholder="Type your message..." spellcheck="false"></textarea>
+      <div class="align-controls">
+        <label>Horizontal</label>
+        <div class="align-group" id="align-h">
+          <button class="align-btn active" data-val="left" title="Left">
+            <svg viewBox="0 0 24 24"><path d="M15 15H3v2h12v-2zm0-8H3v2h12V7zM3 13h18v-2H3v2zM3 21h18v-2H3v2zM3 3v2h18V3H3z"/></svg>
+          </button>
+          <button class="align-btn" data-val="center" title="Center">
+            <svg viewBox="0 0 24 24"><path d="M7 15v2h10v-2H7zm-4 6h18v-2H3v2zm0-8h18v-2H3v2zm4-6v2h10V7H7zM3 3v2h18V3H3z"/></svg>
+          </button>
+          <button class="align-btn" data-val="right" title="Right">
+            <svg viewBox="0 0 24 24"><path d="M3 21h18v-2H3v2zm6-4h12v-2H9v2zm-6-4h18v-2H3v2zm6-4h12V7H9v2zM3 3v2h18V3H3z"/></svg>
+          </button>
+        </div>
+        <label style="margin-left:8px">Vertical</label>
+        <div class="align-group" id="align-v">
+          <button class="align-btn" data-val="top" title="Top">
+            <svg viewBox="0 0 24 24"><path d="M8 11h3v10h2V11h3l-4-4-4 4zM4 3v2h16V3H4z"/></svg>
+          </button>
+          <button class="align-btn active" data-val="middle" title="Middle">
+            <svg viewBox="0 0 24 24"><path d="M8 19h3v4h2v-4h3l-4-4-4 4zm8-14h-3V1h-2v4H8l4 4 4-4zM4 11v2h16v-2H4z"/></svg>
+          </button>
+          <button class="align-btn" data-val="bottom" title="Bottom">
+            <svg viewBox="0 0 24 24"><path d="M16 13h-3V3h-2v10H8l4 4 4-4zM4 19v2h16v-2H4z"/></svg>
+          </button>
+        </div>
+      </div>
+      <div class="inline-row">
+        <button class="btn" id="btn-send">Send</button>
+        <button class="btn btn-sm" id="btn-clear" style="margin-left:auto">Clear Board</button>
+      </div>
+      <div class="config-row">
+        <label>Rows</label>
+        <input type="number" id="cfg-rows" value="6" min="1" max="12">
+        <label>Cols</label>
+        <input type="number" id="cfg-cols" value="22" min="6" max="44">
+        <button class="btn btn-sm" id="btn-resize">Apply</button>
+      </div>
+    </div>
+
+    <!-- CLOCK -->
+    <div class="tab-pane" id="pane-clock">
+      <p style="color:var(--text-dim);margin-bottom:12px;line-height:1.5">
+        Displays the current time and date, updating every minute.<br>
+        The board will show a live clock centered on the display.
+      </p>
+      <div class="inline-row">
+        <button class="btn" id="btn-clock-toggle">Start Clock</button>
+        <label style="margin:0;display:flex;align-items:center;gap:6px">
+          <input type="checkbox" id="chk-24h"> 24-hour format
+        </label>
+      </div>
+    </div>
+
+    <!-- QUEUE -->
+    <div class="tab-pane" id="pane-queue">
+      <div class="row">
+        <div style="flex:3">
+          <label>Add message</label>
+          <input type="text" id="queue-input" placeholder="Enter a message...">
+        </div>
+        <div style="flex:0 0 auto">
+          <label>&nbsp;</label>
+          <button class="btn" id="btn-queue-add">Add</button>
+        </div>
+      </div>
+      <ul class="queue-list" id="queue-list"></ul>
+      <div class="inline-row" style="margin-top:12px">
+        <button class="btn" id="btn-queue-start">Start Rotation</button>
+        <label style="margin:0;display:flex;align-items:center;gap:6px">
+          Interval
+          <input type="number" id="queue-interval" value="8" min="3" max="120" style="width:50px">
+          <span style="color:var(--text-dim)">sec</span>
+        </label>
+        <button class="btn btn-sm btn-danger" id="btn-queue-clear" style="margin-left:auto">Clear All</button>
+      </div>
+    </div>
+
+    <!-- API -->
+    <div class="tab-pane" id="pane-api">
+      <div class="api-section">
+        <h4>BroadcastChannel API</h4>
+        <p style="color:var(--text-dim);line-height:1.5;margin-bottom:4px">
+          Send messages from any script running on the same origin using <code style="color:var(--accent)">BroadcastChannel</code>.
+        </p>
+        <div class="code-block"><span class="cmt">// From any page on the same origin:</span>
+<span class="kw">const</span> ch = <span class="kw">new</span> BroadcastChannel(<span class="str">'splitflap'</span>);
+ch.postMessage({ <span class="str">text</span>: <span class="str">'HELLO WORLD'</span> });
+
+<span class="cmt">// Set specific rows (array of strings):</span>
+ch.postMessage({ <span class="str">rows</span>: [<span class="str">'LINE ONE'</span>, <span class="str">'LINE TWO'</span>] });
+
+<span class="cmt">// Clear the board:</span>
+ch.postMessage({ <span class="str">clear</span>: <span class="kw">true</span> });</div>
+      </div>
+      <div class="api-section">
+        <h4>Window PostMessage</h4>
+        <p style="color:var(--text-dim);line-height:1.5;margin-bottom:4px">
+          If embedding this page in an iframe, use <code style="color:var(--accent)">postMessage</code>.
+        </p>
+        <div class="code-block"><span class="cmt">// From parent page:</span>
+<span class="kw">const</span> iframe = document.getElementById(<span class="str">'splitflap'</span>);
+iframe.contentWindow.postMessage(
+  { <span class="str">text</span>: <span class="str">'HELLO FROM PARENT'</span> },
+  <span class="str">'*'</span>
+);</div>
+      </div>
+      <div class="api-section">
+        <h4>Bookmarklet</h4>
+        <p style="color:var(--text-dim);line-height:1.5;margin-bottom:4px">
+          Drag this to your bookmarks bar, then click it on any page to send text to the board:
+        </p>
+        <div class="code-block" style="user-select:all;cursor:copy">javascript:void(new BroadcastChannel('splitflap').postMessage({text:prompt('Message:')}))</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ═══════════════════════════════════════
+//  CHARACTER SET
+// ═══════════════════════════════════════
+const CHARS = " ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789.,:!?'-/+@#&";
+const CHAR_SET = new Set(CHARS);
+
+function sanitize(c) {
+  c = c.toUpperCase();
+  return CHAR_SET.has(c) ? c : ' ';
+}
+
+// ═══════════════════════════════════════
+//  AUDIO ENGINE — recorded Vestaboard sample
+//  Source: robonyong/react-split-flap-display (MIT)
+//  65ms recording of a single Vestaboard bit flip
+// ═══════════════════════════════════════
+let audioCtx = null;
+let soundEnabled = true;
+let flipBuffer = null; // decoded AudioBuffer from the sample
+
+// Base64-encoded MP3 of a real Vestaboard flip (~2.6KB)
+// Source: robonyong/react-split-flap-display (MIT License)
+const FLIP_B64 = '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hGn5aTG3HgFfLTGIyp2H5UEf6TtOWETXWFmn2dqTz8+/kMvj2tUUWVM/rIX8UOWNBjL6/c7v26KCvwgmzqXUnaKXxGPQTKH9fp7IZmmsQc5sNsscR9aOQRiOfZ+UxG1TVquT3u9G6KVSykikhh67MW6S+wFpD7QK/FDFKKUNdeOngmijph61FGf5hL2mSr/5HPuXdm3JmYVWHW3X2RAkBZYs0gCXUcwLWgtAUsMqZYzXn+f5rS7gWiocgCg1AVBaDUVFhZmZihYWFa1VVVTpJFRUVFRU1rVVr4VaKKFhZmVa2KFhYWWoZmZr9mZhYWFhVVVVX///9VX+V/1r2//Zhb4ZmZmX2ZmZl/4ZmFXYNHfEoKgqCoNA1BUFlUxBTUUzLjEwMFVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVV//tQxOKD0OlZR/2EAAAAADSAAAAEVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVQ==';
+
+async function initAudio() {
+  if (audioCtx) return;
+  audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
+  // Decode the embedded base64 MP3 into an AudioBuffer
+  const binary = atob(FLIP_B64);
+  const bytes = new Uint8Array(binary.length);
+  for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
+  flipBuffer = await audioCtx.decodeAudioData(bytes.buffer);
+}
+
+function playClick() {
+  if (!soundEnabled || !audioCtx || !flipBuffer) return;
+
+  const src = audioCtx.createBufferSource();
+  src.buffer = flipBuffer;
+  // Pitch jitter: ±12% so rapid flips don't sound identical
+  src.playbackRate.value = 0.88 + Math.random() * 0.24;
+
+  const gain = audioCtx.createGain();
+  gain.gain.value = 0.35 + Math.random() * 0.15;
+
+  src.connect(gain).connect(audioCtx.destination);
+  src.start();
+}
+
+// ═══════════════════════════════════════
+//  TILE
+// ═══════════════════════════════════════
+class Tile {
+  constructor() {
+    this.el = document.createElement('div');
+    this.el.className = 'tile';
+    this.currentChar = ' ';
+    this.flipping = false;
+    this._aborted = false;
+
+    this.upper = this._half('upper');
+    this.lower = this._half('lower');
+    this.flapTop = this._flap('flap-top');
+    this.flapBottom = this._flap('flap-bottom');
+
+    this.el.append(this.upper.el, this.lower.el, this.flapTop.el, this.flapBottom.el);
+    this._display(this.currentChar);
+  }
+
+  _half(cls) {
+    const el = document.createElement('div');
+    el.className = `half ${cls}`;
+    const ch = document.createElement('div');
+    ch.className = 'ch';
+    ch.textContent = ' ';
+    el.appendChild(ch);
+    return { el, ch };
+  }
+
+  _flap(cls) {
+    const el = document.createElement('div');
+    el.className = `flap ${cls}`;
+    const ch = document.createElement('div');
+    ch.className = 'ch';
+    ch.textContent = ' ';
+    el.appendChild(ch);
+    return { el, ch };
+  }
+
+  _display(c) {
+    this.upper.ch.textContent = c;
+    this.lower.ch.textContent = c;
+    this.currentChar = c;
+  }
+
+  abort() {
+    this._aborted = true;
+  }
+
+  async flipTo(target, delay = 0) {
+    target = sanitize(target);
+    if (target === this.currentChar && !this.flipping) return;
+
+    this._aborted = false;
+
+    if (delay > 0) await sleep(delay);
+    if (this._aborted) return;
+
+    // Build sequence of intermediate chars
+    const curIdx = CHARS.indexOf(this.currentChar);
+    const tgtIdx = CHARS.indexOf(target);
+    if (curIdx === tgtIdx) return;
+
+    const dist = (tgtIdx - curIdx + CHARS.length) % CHARS.length;
+    let steps = [];
+
+    if (dist <= 5) {
+      for (let i = 1; i <= dist; i++) steps.push(CHARS[(curIdx + i) % CHARS.length]);
+    } else {
+      // Pick 3-4 evenly spaced intermediates, then target
+      const count = Math.min(4, dist - 1);
+      for (let i = 1; i <= count; i++) {
+        steps.push(CHARS[(curIdx + Math.floor(i * dist / (count + 1))) % CHARS.length]);
+      }
+      steps.push(target);
+    }
+
+    this.flipping = true;
+    for (const c of steps) {
+      if (this._aborted) break;
+      await this._flipOnce(c);
+    }
+    this.flipping = false;
+  }
+
+  _flipOnce(newChar) {
+    return new Promise(resolve => {
+      const oldChar = this.currentChar;
+
+      // Setup: upper shows new (hidden behind flap-top), flap-top shows old
+      this.upper.ch.textContent = newChar;
+      this.flapTop.ch.textContent = oldChar;
+      this.flapBottom.ch.textContent = newChar;
+
+      // Phase 1: flip top away
+      this.flapTop.el.classList.add('flip');
+
+      const onP1 = () => {
+        this.flapTop.el.removeEventListener('animationend', onP1);
+        this.flapTop.el.classList.remove('flip');
+        playClick();
+
+        // Phase 2: flip bottom in
+        this.flapBottom.el.classList.add('flip');
+
+        const onP2 = () => {
+          this.flapBottom.el.removeEventListener('animationend', onP2);
+          this.flapBottom.el.classList.remove('flip');
+          this.lower.ch.textContent = newChar;
+          this.currentChar = newChar;
+          resolve();
+        };
+        this.flapBottom.el.addEventListener('animationend', onP2);
+      };
+      this.flapTop.el.addEventListener('animationend', onP1);
+    });
+  }
+}
+
+function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
+
+// ═══════════════════════════════════════
+//  BOARD
+// ═══════════════════════════════════════
+let rows = 6, cols = 22;
+let tiles = []; // 2D array [row][col]
+const boardEl = document.getElementById('board');
+
+function buildBoard() {
+  boardEl.innerHTML = '';
+  tiles = [];
+  boardEl.style.gridTemplateColumns = `repeat(${cols}, var(--tw))`;
+
+  for (let r = 0; r < rows; r++) {
+    tiles[r] = [];
+    for (let c = 0; c < cols; c++) {
+      const tile = new Tile();
+      tiles[r][c] = tile;
+      boardEl.appendChild(tile.el);
+    }
+  }
+  sizeTiles();
+}
+
+function sizeTiles() {
+  const maxW = Math.min(window.innerWidth - 80, 1160);
+  const maxH = window.innerHeight * 0.55;
+
+  const gapTotal = (cols - 1) * 3;
+  let tw = Math.floor((maxW - gapTotal) / cols);
+  let th = Math.round(tw * 1.42);
+
+  // Check height constraint
+  const totalH = th * rows + (rows - 1) * 3;
+  if (totalH > maxH) {
+    th = Math.floor((maxH - (rows - 1) * 3) / rows);
+    tw = Math.round(th / 1.42);
+  }
+
+  tw = Math.max(tw, 20);
+  th = Math.max(th, 28);
+
+  document.documentElement.style.setProperty('--tw', tw + 'px');
+  document.documentElement.style.setProperty('--th', th + 'px');
+}
+
+// ═══════════════════════════════════════
+//  BOARD API
+// ═══════════════════════════════════════
+function abortAll() {
+  for (const row of tiles) for (const t of row) t.abort();
+}
+
+function setBoard(lines) {
+  // lines: array of strings, one per row
+  abortAll();
+  const promises = [];
+  for (let r = 0; r < rows; r++) {
+    const line = (lines[r] || '').toUpperCase();
+    for (let c = 0; c < cols; c++) {
+      const ch = c < line.length ? sanitize(line[c]) : ' ';
+      const delay = r * 18 + c * 28;
+      promises.push(tiles[r][c].flipTo(ch, delay));
+    }
+  }
+  return Promise.all(promises);
+}
+
+let alignH = 'left';
+let alignV = 'middle';
+
+function setBoardText(text, hAlign, vAlign) {
+  hAlign = hAlign || alignH;
+  vAlign = vAlign || alignV;
+
+  const lines = wordWrap(text.toUpperCase(), cols);
+
+  // Horizontal alignment — pad each line
+  const aligned = lines.map(line => {
+    if (line.length >= cols) return line.slice(0, cols);
+    const gap = cols - line.length;
+    if (hAlign === 'center') {
+      const left = Math.floor(gap / 2);
+      return ' '.repeat(left) + line + ' '.repeat(gap - left);
+    } else if (hAlign === 'right') {
+      return ' '.repeat(gap) + line;
+    }
+    return line; // left — setBoard pads with spaces on the right
+  });
+
+  // Vertical alignment
+  let padTop = 0;
+  if (aligned.length < rows) {
+    if (vAlign === 'middle') padTop = Math.floor((rows - aligned.length) / 2);
+    else if (vAlign === 'bottom') padTop = rows - aligned.length;
+    // top: padTop stays 0
+  }
+
+  const padded = [];
+  for (let i = 0; i < rows; i++) {
+    padded.push(i >= padTop && i < padTop + aligned.length ? aligned[i - padTop] : '');
+  }
+  return setBoard(padded);
+}
+
+function clearBoard() {
+  return setBoard(Array(rows).fill(''));
+}
+
+function wordWrap(text, width) {
+  // Split on explicit newlines first
+  const paragraphs = text.split('\n');
+  const result = [];
+
+  for (const para of paragraphs) {
+    if (para.trim() === '') { result.push(''); continue; }
+    const words = para.split(/\s+/).filter(Boolean);
+    let line = '';
+
+    for (const word of words) {
+      if (word.length > width) {
+        // Break long word
+        if (line) { result.push(line); line = ''; }
+        for (let i = 0; i < word.length; i += width) {
+          result.push(word.slice(i, i + width));
+        }
+        continue;
+      }
+      if (line && line.length + 1 + word.length > width) {
+        result.push(line);
+        line = word;
+      } else {
+        line = line ? line + ' ' + word : word;
+      }
+    }
+    if (line) result.push(line);
+  }
+
+  return result;
+}
+
+// ═══════════════════════════════════════
+//  CLOCK MODE
+// ═══════════════════════════════════════
+let clockInterval = null;
+let is24h = false;
+
+function startClock() {
+  stopQueue();
+  updateClock();
+  clockInterval = setInterval(updateClock, 1000);
+  document.getElementById('btn-clock-toggle').textContent = 'Stop Clock';
+}
+
+function stopClock() {
+  if (clockInterval) { clearInterval(clockInterval); clockInterval = null; }
+  document.getElementById('btn-clock-toggle').textContent = 'Start Clock';
+}
+
+let lastClockStr = '';
+function updateClock() {
+  const now = new Date();
+  const h = now.getHours();
+  const m = now.getMinutes();
+  const hStr = is24h ? String(h).padStart(2, '0') : String(((h + 11) % 12) + 1).padStart(2, ' ');
+  const mStr = String(m).padStart(2, '0');
+  const ampm = is24h ? '' : (h < 12 ? ' AM' : ' PM');
+  const timeStr = hStr + ':' + mStr + ampm;
+
+  const days = ['SUNDAY', 'MONDAY', 'TUESDAY', 'WEDNESDAY', 'THURSDAY', 'FRIDAY', 'SATURDAY'];
+  const months = ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN', 'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC'];
+  const dateStr = days[now.getDay()] + '  ' + months[now.getMonth()] + ' ' + now.getDate();
+  const yearStr = String(now.getFullYear());
+
+  const clockStr = timeStr + '|' + dateStr + '|' + yearStr;
+  if (clockStr === lastClockStr) return;
+  lastClockStr = clockStr;
+
+  // Build centered lines
+  const lines = [];
+  const center = (s) => {
+    const pad = Math.max(0, Math.floor((cols - s.length) / 2));
+    return ' '.repeat(pad) + s;
+  };
+
+  if (rows >= 6) {
+    lines.push('');
+    lines.push(center(timeStr));
+    lines.push('');
+    lines.push(center(dateStr));
+    lines.push(center(yearStr));
+    lines.push('');
+  } else if (rows >= 3) {
+    lines.push(center(timeStr));
+    lines.push(center(dateStr));
+    lines.push(center(yearStr));
+  } else {
+    lines.push(center(timeStr + '  ' + dateStr));
+  }
+
+  setBoard(lines);
+}
+
+// ═══════════════════════════════════════
+//  MESSAGE QUEUE
+// ═══════════════════════════════════════
+let queue = [];
+let queueIdx = 0;
+let queueInterval = null;
+
+function addToQueue(msg) {
+  if (!msg.trim()) return;
+  queue.push(msg.trim());
+  renderQueue();
+}
+
+function removeFromQueue(idx) {
+  queue.splice(idx, 1);
+  if (queueIdx >= queue.length) queueIdx = 0;
+  renderQueue();
+}
+
+function renderQueue() {
+  const list = document.getElementById('queue-list');
+  list.innerHTML = '';
+  queue.forEach((msg, i) => {
+    const li = document.createElement('li');
+    li.className = 'queue-item';
+    li.innerHTML = `<span class="idx">${i + 1}</span><span class="msg">${escHtml(msg)}</span><span class="remove" data-idx="${i}">&times;</span>`;
+    list.appendChild(li);
+  });
+}
+
+function startQueue() {
+  if (queue.length === 0) return;
+  stopClock();
+  queueIdx = 0;
+  showQueueMessage();
+  const sec = parseInt(document.getElementById('queue-interval').value) || 8;
+  queueInterval = setInterval(() => {
+    queueIdx = (queueIdx + 1) % queue.length;
+    showQueueMessage();
+  }, sec * 1000);
+  document.getElementById('btn-queue-start').textContent = 'Stop Rotation';
+}
+
+function stopQueue() {
+  if (queueInterval) { clearInterval(queueInterval); queueInterval = null; }
+  document.getElementById('btn-queue-start').textContent = 'Start Rotation';
+}
+
+function showQueueMessage() {
+  if (queue.length === 0) return;
+  setBoardText(queue[queueIdx]);
+}
+
+function escHtml(s) {
+  return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+}
+
+// ═══════════════════════════════════════
+//  BROADCAST CHANNEL
+// ═══════════════════════════════════════
+const channel = new BroadcastChannel('splitflap');
+channel.onmessage = (e) => {
+  const d = e.data;
+  if (!d) return;
+  stopClock();
+  stopQueue();
+  if (d.clear) { clearBoard(); return; }
+  if (d.rows && Array.isArray(d.rows)) { setBoard(d.rows); return; }
+  if (d.text) { setBoardText(d.text); return; }
+};
+
+window.addEventListener('message', (e) => {
+  const d = e.data;
+  if (!d || typeof d !== 'object') return;
+  stopClock();
+  stopQueue();
+  if (d.clear) { clearBoard(); return; }
+  if (d.rows && Array.isArray(d.rows)) { setBoard(d.rows); return; }
+  if (d.text) { setBoardText(d.text); return; }
+});
+
+// ═══════════════════════════════════════
+//  UI WIRING
+// ═══════════════════════════════════════
+document.addEventListener('DOMContentLoaded', () => {
+  buildBoard();
+
+  // Init audio on first interaction
+  document.body.addEventListener('click', () => initAudio(), { once: true });
+
+  // Tabs
+  document.querySelectorAll('.tab').forEach(tab => {
+    tab.addEventListener('click', () => {
+      document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+      document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
+      tab.classList.add('active');
+      document.getElementById('pane-' + tab.dataset.tab).classList.add('active');
+    });
+  });
+
+  // Text input
+  document.getElementById('btn-send').addEventListener('click', () => {
+    stopClock(); stopQueue();
+    const text = document.getElementById('text-input').value;
+    if (text.trim()) setBoardText(text);
+  });
+
+  document.getElementById('text-input').addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) {
+      e.preventDefault();
+      document.getElementById('btn-send').click();
+    }
+  });
+
+  document.getElementById('btn-clear').addEventListener('click', () => {
+    stopClock(); stopQueue();
+    clearBoard();
+  });
+
+  // Alignment toggles
+  function wireAlignGroup(id, setter) {
+    const group = document.getElementById(id);
+    group.querySelectorAll('.align-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        group.querySelectorAll('.align-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        setter(btn.dataset.val);
+      });
+    });
+  }
+  wireAlignGroup('align-h', v => { alignH = v; });
+  wireAlignGroup('align-v', v => { alignV = v; });
+
+  // Resize
+  document.getElementById('btn-resize').addEventListener('click', () => {
+    const r = Math.max(1, Math.min(12, parseInt(document.getElementById('cfg-rows').value) || 6));
+    const c = Math.max(6, Math.min(44, parseInt(document.getElementById('cfg-cols').value) || 22));
+    rows = r; cols = c;
+    document.getElementById('cfg-rows').value = r;
+    document.getElementById('cfg-cols').value = c;
+    buildBoard();
+  });
+
+  // Clock
+  document.getElementById('btn-clock-toggle').addEventListener('click', () => {
+    clockInterval ? stopClock() : startClock();
+  });
+  document.getElementById('chk-24h').addEventListener('change', (e) => {
+    is24h = e.target.checked;
+    if (clockInterval) { lastClockStr = ''; updateClock(); }
+  });
+
+  // Queue
+  document.getElementById('btn-queue-add').addEventListener('click', () => {
+    const input = document.getElementById('queue-input');
+    addToQueue(input.value);
+    input.value = '';
+    input.focus();
+  });
+  document.getElementById('queue-input').addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') { e.preventDefault(); document.getElementById('btn-queue-add').click(); }
+  });
+  document.getElementById('queue-list').addEventListener('click', (e) => {
+    if (e.target.classList.contains('remove')) {
+      removeFromQueue(parseInt(e.target.dataset.idx));
+    }
+  });
+  document.getElementById('btn-queue-start').addEventListener('click', () => {
+    queueInterval ? stopQueue() : startQueue();
+  });
+  document.getElementById('btn-queue-clear').addEventListener('click', () => {
+    stopQueue();
+    queue = [];
+    renderQueue();
+  });
+
+  // Sound toggle
+  const btnSound = document.getElementById('btn-sound');
+  btnSound.addEventListener('click', () => {
+    soundEnabled = !soundEnabled;
+    btnSound.classList.toggle('active', soundEnabled);
+    document.getElementById('sound-icon').setAttribute('d',
+      soundEnabled
+        ? 'M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z'
+        : 'M16.5 12c0-1.77-1.02-3.29-2.5-4.03v2.21l2.45 2.45c.03-.2.05-.41.05-.63zm2.5 0c0 .94-.2 1.82-.54 2.64l1.51 1.51C20.63 14.91 21 13.5 21 12c0-4.28-2.99-7.86-7-8.77v2.06c2.89.86 5 3.54 5 6.71zM4.27 3L3 4.27 7.73 9H3v6h4l5 5v-6.73l4.25 4.25c-.67.52-1.42.93-2.25 1.18v2.06c1.38-.31 2.63-.95 3.69-1.81L19.73 21 21 19.73l-9-9L4.27 3zM12 4L9.91 6.09 12 8.18V4z'
+    );
+  });
+  btnSound.classList.toggle('active', soundEnabled);
+
+  // Fullscreen
+  document.getElementById('btn-fullscreen').addEventListener('click', () => {
+    if (document.fullscreenElement) {
+      document.exitFullscreen();
+    } else {
+      document.documentElement.requestFullscreen().catch(() => {});
+    }
+  });
+
+  // Resize handler
+  window.addEventListener('resize', () => sizeTiles());
+
+  // Welcome message after a brief delay
+  setTimeout(() => {
+    setBoardText('SPLIT-FLAP DISPLAY\nREADY');
+  }, 300);
+});
+</script>
+</body>
+</html>
