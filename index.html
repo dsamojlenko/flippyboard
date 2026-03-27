@@ -453,6 +453,22 @@ label {
 .color-swatch:hover::after {
   opacity: 1;
 }
+.swatch-none {
+  background: var(--surface);
+  border-color: var(--text-dim);
+  position: relative;
+  overflow: hidden;
+}
+.swatch-none::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0;
+  width: 141%;
+  height: 2px;
+  background: var(--danger);
+  transform-origin: top left;
+  transform: rotate(45deg);
+}
 
 /* ── Config Row ── */
 .config-row {
@@ -2175,19 +2191,28 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   function applyFill(colorCode) {
-    fillColor = fillColor === colorCode ? null : colorCode;
+    fillColor = colorCode === null ? null : (fillColor === colorCode ? null : colorCode);
     updateToolbarIndicator('btn-fill', fillColor);
     persistState();
   }
 
   function applyBorder(colorCode) {
-    borderColor = borderColor === colorCode ? null : colorCode;
+    borderColor = colorCode === null ? null : (borderColor === colorCode ? null : colorCode);
     updateToolbarIndicator('btn-border', borderColor);
     persistState();
   }
 
   function buildActionSwatches(containerId, onClick) {
     const container = document.getElementById(containerId);
+    // "None" swatch to clear the setting
+    const none = document.createElement('div');
+    none.className = 'color-swatch swatch-none';
+    none.title = 'None';
+    none.addEventListener('click', () => {
+      onClick(null);
+      document.querySelectorAll('.toolbar-dropdown.open').forEach(d => d.classList.remove('open'));
+    });
+    container.appendChild(none);
     for (const [ch, info] of Object.entries(COLOR_TILES)) {
       const swatch = document.createElement('div');
       swatch.className = 'color-swatch';
