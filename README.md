@@ -1,66 +1,89 @@
 # Flippy Board
 
-A split-flap display simulator in a single HTML file. No build tools, no dependencies, no API keys required.
+A split-flap display simulator with a Node.js server, separate display and admin pages, and real-time sync via WebSocket. No build tools or API keys required.
 
-Open `index.html` in any modern browser to get started.
+## Getting Started
+
+```bash
+npm install
+node server.js
+```
+
+Open `http://localhost:3000/admin` to manage the board and `http://localhost:3000/display` on a second screen or window to show the board.
+
+The standalone `index.html` is also available at `http://localhost:3000/` and works independently without the server.
+
+**Requirements:** Node.js 18+
+
+## Architecture
+
+- **Display** (`/display`) — passive board that receives commands via WebSocket
+- **Admin** (`/admin`) — full management UI, sends commands via REST API
+- **Server** — Express + better-sqlite3 + ws; broadcasts state changes to all connected clients
+- **Database** — SQLite file at `data/flippyboard.db`, created automatically on first run
 
 ## Features
 
 ### Text Display
-- Type a message and send it to the board with animated split-flap tile transitions
-- Supports word wrapping, horizontal alignment (left/center/right), and vertical alignment (top/middle/bottom)
-- Color tiles: insert `{R}` `{O}` `{Y}` `{G}` `{B}` `{V}` `{W}` for red, orange, yellow, green, blue, violet, and white solid tiles
-- Apply fill (color all empty tiles) or border (wrap message in a colored frame) from the color pickers
+- Animated split-flap tile transitions with authentic flip sound
+- Word wrapping, horizontal alignment (left/center/right), vertical alignment (top/middle/bottom)
+- Color tiles: insert `{R}` `{O}` `{Y}` `{G}` `{B}` `{V}` `{W}` for red, orange, yellow, green, blue, violet, and white
+- Fill (color empty tiles) and border (colored frame) from color pickers
 - Configurable board size (rows and columns)
-- Full flip mode: optionally flip through every intermediate character for a more authentic feel
+- Full flip mode: flip through every intermediate character
 
 ### Saved Messages
-- Save any message with a custom name for quick recall
-- Click a saved message to load it back into the editor
-- Saved messages persist across page reloads
+- Save messages with custom names for quick recall
+- Click to load back into the editor
 
 ### Clock
-- Live clock display with time, day, and date
+- Live clock with time, day, and date
 - 12-hour or 24-hour format
-- Optional timezone override — type a city name to search and select, or enter an IANA timezone string manually
+- Optional timezone override with city autocomplete
 
 ### World Clock
-- Show current times for multiple cities around the world, one per row
-- Choose from 20 built-in cities or add custom ones
-- City autocomplete powered by Open-Meteo geocoding — type a city name to search, and the timezone is filled in automatically
+- Current times for multiple cities, one per row
+- 20 built-in cities plus custom entries
+- City autocomplete powered by Open-Meteo geocoding
 - Randomize button for a fresh selection
 
 ### Weather
-- Current conditions displayed on the board: temperature, condition, high/low, wind, humidity
-- Search by city name or auto-detect location via browser geolocation
+- Current conditions: temperature, condition, high/low, wind, humidity
+- Search by city or auto-detect via browser geolocation
 - Fahrenheit or Celsius
-- Optional auto-refresh interval
 - Powered by [Open-Meteo](https://open-meteo.com/) (free, no API key)
 
 ### Message Queue
-- Build a rotation of items: text messages, saved messages, clock, world clock, or weather
-- Configurable rotation interval
-- Mix and match different types in a single queue
+- Rotation of text messages, clock, world clock, and weather
+- Configurable dwell time
+- Drag-to-reorder
 
 ### Sound
 - Authentic flip sound sampled from a real Vestaboard
-- Toggle on/off from the toolbar
+- Sound destination routing: **Display**, **Admin**, **Both**, or **Off** — prevents double audio when both pages are open
+- Display page initializes audio eagerly; click the display page once if your browser requires user interaction to enable sound
 
 ### Persistence
-All settings and data are saved to `localStorage` and restored on reload:
-board size, alignment, sound, clock format, timezone, world clock cities, weather location/unit, saved messages, and queue contents. Export and import configuration as JSON from the Settings tab.
+All settings, saved messages, queue items, and world clock cities are stored in SQLite and persist across restarts. Export and import configuration as JSON from the Settings tab.
 
-### API
-Control the board programmatically from other scripts on the same origin:
+### REST API
 
-```js
-const ch = new BroadcastChannel('splitflap');
-ch.postMessage({ text: 'HELLO WORLD' });
-ch.postMessage({ rows: ['LINE ONE', 'LINE TWO'] });
-ch.postMessage({ clear: true });
-```
+The server exposes a REST API at `/api`:
 
-Or via `postMessage` when embedding in an iframe.
+| Method | Path | Description |
+|--------|------|-------------|
+| `GET` | `/settings` | Get all settings |
+| `PATCH` | `/settings` | Update settings (broadcasts to all clients) |
+| `POST` | `/display/text` | Send text to the board |
+| `POST` | `/display/clear` | Clear the board |
+| `POST` | `/display/clock` | Start the clock |
+| `POST` | `/display/worldclock` | Start the world clock |
+| `POST` | `/display/weather` | Fetch and display weather |
+| `GET` | `/messages` | List saved messages |
+| `POST` | `/messages` | Save a message |
+| `GET` | `/queue/items` | List queue items |
+| `POST` | `/queue/start` | Start queue rotation |
+| `POST` | `/queue/stop` | Stop queue rotation |
 
 ## Audio Attribution
 
