@@ -733,8 +733,8 @@ label {
       <div class="inline-row" style="margin-top:12px">
         <button class="btn" id="btn-queue-start">Start Rotation</button>
         <label style="margin:0;display:flex;align-items:center;gap:6px">
-          Interval
-          <input type="number" id="queue-interval" value="8" min="3" max="120" style="width:50px">
+          Dwell time
+          <input type="number" id="queue-dwell" value="8" min="3" max="120" style="width:50px">
           <span style="color:var(--text-dim)">sec</span>
         </label>
         <button class="btn btn-sm btn-danger" id="btn-queue-clear" style="margin-left:auto">Clear All</button>
@@ -1299,7 +1299,7 @@ function updateClock() {
     lines.push(center(timeStr + '  ' + dateStr));
   }
 
-  setBoard(lines);
+  return setBoard(lines);
 }
 
 // ═══════════════════════════════════════
@@ -1346,7 +1346,7 @@ function updateWorldClock() {
     lines.push(name + ' '.repeat(gap) + time);
   }
 
-  setBoard(lines);
+  return setBoard(lines);
 }
 
 function startWorldClock() {
@@ -1413,7 +1413,7 @@ function renderWorldClockCityPicker() {
 // ═══════════════════════════════════════
 let queue = []; // Array of { type: 'text'|'clock'|'weather'|'saved', text?, name? }
 let queueIdx = 0;
-let queueInterval = null;
+let queueTimeout = null;
 
 // Normalize legacy plain-string queue entries
 function normalizeQueueItem(item) {
@@ -1462,17 +1462,23 @@ function startQueue() {
   stopWorldClock();
   stopWeatherAutoRefresh();
   queueIdx = 0;
-  showQueueMessage();
-  const sec = parseInt(document.getElementById('queue-interval').value) || 8;
-  queueInterval = setInterval(() => {
-    queueIdx = (queueIdx + 1) % queue.length;
-    showQueueMessage();
-  }, sec * 1000);
+  queueTimeout = -1; // sentinel: queue is active
+  showQueueMessage().then(() => scheduleNextQueueItem());
   document.getElementById('btn-queue-start').textContent = 'Stop Rotation';
 }
 
+function scheduleNextQueueItem() {
+  if (queueTimeout === null) return; // stopped
+  const sec = parseInt(document.getElementById('queue-dwell').value) || 8;
+  queueTimeout = setTimeout(async () => {
+    queueIdx = (queueIdx + 1) % queue.length;
+    await showQueueMessage();
+    scheduleNextQueueItem();
+  }, sec * 1000);
+}
+
 function stopQueue() {
-  if (queueInterval) { clearInterval(queueInterval); queueInterval = null; }
+  if (queueTimeout !== null) { clearTimeout(queueTimeout); queueTimeout = null; }
   document.getElementById('btn-queue-start').textContent = 'Start Rotation';
 }
 
@@ -1482,17 +1488,17 @@ async function showQueueMessage() {
   const item = normalizeQueueItem(queue[queueIdx]);
   if (item.type === 'clock') {
     lastClockStr = '';
-    updateClock();
+    await updateClock();
   } else if (item.type === 'worldclock') {
     if (worldClockCities.length === 0) pickRandomWorldClockCities();
     lastWorldClockStr = '';
-    updateWorldClock();
+    await updateWorldClock();
   } else if (item.type === 'weather') {
     _queueBusy = true;
     try { await showWeather(); } finally { _queueBusy = false; }
   } else {
     // text or saved
-    setBoardText(item.text || '');
+    await setBoardText(item.text || '');
   }
 }
 
@@ -1651,7 +1657,7 @@ async function fetchWeather(lat, lon) {
 }
 
 function displayWeather(data, cityName) {
-  if (!queueInterval) { stopClock(); }
+  if (queueTimeout === null) { stopClock(); }
 
   const cur = data.current;
   const daily = data.daily;
@@ -1680,7 +1686,7 @@ function displayWeather(data, cityName) {
     lines.push(temp + '.' + unitLabel + ' ' + condition);
   }
 
-  setBoardText(lines.join('\n'));
+  return setBoardText(lines.join('\n'));
 }
 
 async function showWeather() {
@@ -1691,7 +1697,7 @@ async function showWeather() {
   weatherStatus('Fetching weather...');
   try {
     const data = await fetchWeather(weatherLat, weatherLon);
-    displayWeather(data, weatherCity || 'LOCAL');
+    await displayWeather(data, weatherCity || 'LOCAL');
     weatherStatus('Updated: ' + new Date().toLocaleTimeString());
   } catch (e) {
     weatherStatus('Error: ' + e.message);
@@ -1760,7 +1766,7 @@ function persistState() {
   const state = {
     rows, cols, alignH, alignV, soundEnabled, is24h, fullFlip,
     clockTimezone,
-    queueIntervalSec: parseInt(document.getElementById('queue-interval').value) || 8,
+    queueDwellSec: parseInt(document.getElementById('queue-dwell').value) || 8,
     queue,
     savedMessages,
     worldClock: {
@@ -1803,7 +1809,7 @@ function loadDefaults() {
   const defaults = {
     rows: 6, cols: 22, alignH: 'center', alignV: 'middle',
     soundEnabled: true, is24h: false, fullFlip: true,
-    queueIntervalSec: 12,
+    queueDwellSec: 12,
     queue: [
       { type: 'saved', name: 'Welcome to\nFlippy Board', text: 'Welcome to\nFlippy Board' },
       { type: 'clock' },
@@ -1872,8 +1878,8 @@ function loadState() {
       renderQueue();
     }
 
-    if (s.queueIntervalSec) {
-      document.getElementById('queue-interval').value = s.queueIntervalSec;
+    if (s.queueDwellSec) {
+      document.getElementById('queue-dwell').value = s.queueDwellSec;
     }
 
     if (Array.isArray(s.savedMessages)) {
@@ -1933,7 +1939,7 @@ function exportConfig() {
   const exported = {
     rows: s.rows, cols: s.cols, is24h: s.is24h, fullFlip: s.fullFlip,
     clockTimezone: s.clockTimezone,
-    soundEnabled: s.soundEnabled, queueIntervalSec: s.queueIntervalSec,
+    soundEnabled: s.soundEnabled, queueDwellSec: s.queueDwellSec,
     queue: s.queue, savedMessages: s.savedMessages,
     worldClock: s.worldClock || { cities: [], customCities: [] },
     weather: s.weather,
@@ -2308,7 +2314,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
   document.getElementById('btn-queue-start').addEventListener('click', () => {
-    queueInterval ? stopQueue() : startQueue();
+    queueTimeout !== null ? stopQueue() : startQueue();
     persistState();
   });
   document.getElementById('btn-queue-clear').addEventListener('click', () => {
@@ -2440,10 +2446,10 @@ document.addEventListener('DOMContentLoaded', () => {
   let worldClockWasPaused = false;
   document.addEventListener('visibilitychange', () => {
     if (document.hidden) {
-      // Pause intervals to prevent callback buildup in background tabs
-      if (queueInterval) {
-        clearInterval(queueInterval);
-        queueInterval = null;
+      // Pause timers to prevent callback buildup in background tabs
+      if (queueTimeout !== null) {
+        clearTimeout(queueTimeout);
+        queueTimeout = null;
         queueWasPaused = true;
       }
       if (clockInterval) {
@@ -2468,12 +2474,8 @@ document.addEventListener('DOMContentLoaded', () => {
       // Restart queue if it was running
       if (queueWasPaused && queue.length > 0) {
         queueWasPaused = false;
-        const sec = parseInt(document.getElementById('queue-interval').value) || 8;
-        queueInterval = setInterval(() => {
-          queueIdx = (queueIdx + 1) % queue.length;
-          showQueueMessage();
-        }, sec * 1000);
-        showQueueMessage();
+        queueTimeout = -1; // sentinel: queue is active
+        showQueueMessage().then(() => scheduleNextQueueItem());
       }
       // Restart clock if it was running
       if (clockWasPaused) {
