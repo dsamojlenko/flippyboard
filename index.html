@@ -566,6 +566,14 @@ label {
           </button>
         </div>
       </div>
+      <div class="color-palette" style="margin-top:10px">
+        <label>Apply fill <span style="color:var(--text-dim);text-transform:none;font-size:10px;letter-spacing:0">&mdash; fill empty space with a color</span></label>
+        <div class="color-swatches" id="fill-swatches" style="margin-top:6px"></div>
+      </div>
+      <div class="color-palette" style="margin-top:10px">
+        <label>Apply border <span style="color:var(--text-dim);text-transform:none;font-size:10px;letter-spacing:0">&mdash; wrap message with a colored border</span></label>
+        <div class="color-swatches" id="border-swatches" style="margin-top:6px"></div>
+      </div>
       <div class="inline-row">
         <button class="btn" id="btn-send">Send</button>
         <button class="btn btn-sm" id="btn-save">Save Message</button>
@@ -1073,6 +1081,8 @@ function wordWrap(text, width) {
 
   for (const para of paragraphs) {
     if (para.trim() === '') { result.push(''); continue; }
+    // If the line already fits, preserve it as-is (keeps spacing intact)
+    if (para.length <= width) { result.push(para); continue; }
     const words = para.split(/\s+/).filter(Boolean);
     let line = '';
 
@@ -1589,6 +1599,85 @@ document.addEventListener('DOMContentLoaded', () => {
     });
     swatchContainer.appendChild(swatch);
   }
+
+  // Fill & Border action swatches
+  function layoutTextForBoard(text, numCols, numRows, hAlign, vAlign) {
+    text = parseColorCodes(text);
+    const lines = wordWrap(text.toUpperCase(), numCols);
+    const aligned = lines.map(line => {
+      if (line.length >= numCols) return line.slice(0, numCols);
+      const gap = numCols - line.length;
+      if (hAlign === 'center') {
+        const left = Math.floor(gap / 2);
+        return ' '.repeat(left) + line + ' '.repeat(gap - left);
+      } else if (hAlign === 'right') {
+        return ' '.repeat(gap) + line;
+      }
+      return line + ' '.repeat(gap);
+    });
+    let padTop = 0;
+    if (aligned.length < numRows) {
+      if (vAlign === 'middle') padTop = Math.floor((numRows - aligned.length) / 2);
+      else if (vAlign === 'bottom') padTop = numRows - aligned.length;
+    }
+    const result = [];
+    for (let i = 0; i < numRows; i++) {
+      let line = i >= padTop && i < padTop + aligned.length ? aligned[i - padTop] : '';
+      if (line.length < numCols) line += ' '.repeat(numCols - line.length);
+      result.push(line);
+    }
+    return result;
+  }
+
+  // Convert PUA chars back to {X} codes for the textarea
+  function puaToColorCodes(text) {
+    let out = '';
+    for (const ch of text) {
+      if (COLOR_TILES[ch]) out += '{' + COLOR_TILES[ch].code + '}';
+      else out += ch;
+    }
+    return out;
+  }
+
+  function applyFill(colorCode) {
+    const ta = document.getElementById('text-input');
+    const laid = layoutTextForBoard(ta.value, cols, rows, alignH, alignV);
+    const colorChar = CODE_TO_COLOR[colorCode];
+    const filled = laid.map(line => {
+      let out = '';
+      for (const ch of line) out += ch === ' ' ? colorChar : ch;
+      return out;
+    });
+    ta.value = filled.map(puaToColorCodes).join('\n');
+  }
+
+  function applyBorder(colorCode) {
+    const ta = document.getElementById('text-input');
+    const innerCols = cols - 2;
+    const innerRows = rows - 2;
+    const laid = layoutTextForBoard(ta.value, innerCols, innerRows, alignH, alignV);
+    const colorChar = CODE_TO_COLOR[colorCode];
+    const bordered = [];
+    bordered.push(colorChar.repeat(cols));
+    for (const line of laid) bordered.push(colorChar + line + colorChar);
+    bordered.push(colorChar.repeat(cols));
+    ta.value = bordered.map(puaToColorCodes).join('\n');
+  }
+
+  function buildActionSwatches(containerId, onClick) {
+    const container = document.getElementById(containerId);
+    for (const [ch, info] of Object.entries(COLOR_TILES)) {
+      const swatch = document.createElement('div');
+      swatch.className = 'color-swatch';
+      swatch.style.background = info.upper;
+      swatch.title = info.name;
+      swatch.addEventListener('click', () => onClick(info.code));
+      container.appendChild(swatch);
+    }
+  }
+
+  buildActionSwatches('fill-swatches', applyFill);
+  buildActionSwatches('border-swatches', applyBorder);
 
   // Alignment toggles
   function wireAlignGroup(id, setter) {
