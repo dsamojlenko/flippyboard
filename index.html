@@ -525,6 +525,7 @@ label {
   <div class="tabs">
     <button class="tab active" data-tab="text">Text</button>
     <button class="tab" data-tab="clock">Clock</button>
+    <button class="tab" data-tab="weather">Weather</button>
     <button class="tab" data-tab="saved">Saved</button>
     <button class="tab" data-tab="queue">Queue</button>
     <button class="tab" data-tab="api">API</button>
@@ -579,6 +580,40 @@ label {
         <label style="margin-left:auto;display:flex;align-items:center;gap:6px">
           <input type="checkbox" id="chk-full-flip"> Full flip
         </label>
+      </div>
+    </div>
+
+    <!-- WEATHER -->
+    <div class="tab-pane" id="pane-weather">
+      <div class="row">
+        <div style="flex:3">
+          <label>City <span style="color:var(--text-dim);text-transform:none;font-size:10px;letter-spacing:0">&mdash; or use auto-detect</span></label>
+          <input type="text" id="weather-city" placeholder="e.g. New York">
+        </div>
+        <div style="flex:0 0 auto">
+          <label>&nbsp;</label>
+          <button class="btn" id="btn-weather-search">Search</button>
+        </div>
+        <div style="flex:0 0 auto">
+          <label>&nbsp;</label>
+          <button class="btn btn-sm" id="btn-weather-locate">Auto-Detect</button>
+        </div>
+      </div>
+      <div id="weather-status" style="color:var(--text-dim);font-size:11px;margin-top:8px"></div>
+      <div class="inline-row" style="margin-top:12px">
+        <button class="btn" id="btn-weather-show">Show Weather</button>
+        <label style="margin:0;display:flex;align-items:center;gap:6px">
+          <input type="checkbox" id="chk-weather-auto"> Auto-refresh
+        </label>
+        <label style="margin:0;display:flex;align-items:center;gap:6px">
+          Every
+          <input type="number" id="weather-refresh-min" value="15" min="5" max="120" style="width:50px">
+          <span style="color:var(--text-dim)">min</span>
+        </label>
+        <div class="align-group" style="margin-left:auto">
+          <button class="align-btn active" data-val="F" id="weather-unit-f">&deg;F</button>
+          <button class="align-btn" data-val="C" id="weather-unit-c">&deg;C</button>
+        </div>
       </div>
     </div>
 
@@ -1167,6 +1202,110 @@ function showQueueMessage() {
   setBoardText(queue[queueIdx]);
 }
 
+// ═══════════════════════════════════════
+//  WEATHER
+// ═══════════════════════════════════════
+let weatherLat = null, weatherLon = null, weatherCity = '';
+let weatherUnit = 'F'; // 'F' or 'C'
+let weatherAutoRefresh = false;
+let weatherRefreshMin = 15;
+let weatherInterval = null;
+
+const WMO_CODES = {
+  0: 'CLEAR SKY', 1: 'MAINLY CLEAR', 2: 'PARTLY CLOUDY', 3: 'OVERCAST',
+  45: 'FOG', 48: 'RIME FOG',
+  51: 'LIGHT DRIZZLE', 53: 'DRIZZLE', 55: 'HEAVY DRIZZLE',
+  56: 'FREEZING DRIZZLE', 57: 'FREEZING DRIZZLE',
+  61: 'LIGHT RAIN', 63: 'RAIN', 65: 'HEAVY RAIN',
+  66: 'FREEZING RAIN', 67: 'FREEZING RAIN',
+  71: 'LIGHT SNOW', 73: 'SNOW', 75: 'HEAVY SNOW',
+  77: 'SNOW GRAINS',
+  80: 'LIGHT SHOWERS', 81: 'SHOWERS', 82: 'HEAVY SHOWERS',
+  85: 'SNOW SHOWERS', 86: 'HEAVY SNOW SHOWERS',
+  95: 'THUNDERSTORM', 96: 'THUNDERSTORM/HAIL', 99: 'THUNDERSTORM/HAIL',
+};
+
+function weatherStatus(msg) {
+  document.getElementById('weather-status').textContent = msg;
+}
+
+async function geocodeCity(city) {
+  const url = `https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(city)}&count=1&language=en`;
+  const resp = await fetch(url);
+  const data = await resp.json();
+  if (!data.results || data.results.length === 0) throw new Error('City not found');
+  const r = data.results[0];
+  return { lat: r.latitude, lon: r.longitude, name: r.name, admin: r.admin1 || '', country: r.country_code || '' };
+}
+
+async function fetchWeather(lat, lon) {
+  const unit = weatherUnit === 'C' ? 'celsius' : 'fahrenheit';
+  const windUnit = weatherUnit === 'C' ? 'kmh' : 'mph';
+  const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,weather_code,wind_speed_10m,relative_humidity_2m&daily=temperature_2m_max,temperature_2m_min&temperature_unit=${unit}&wind_speed_unit=${windUnit}&timezone=auto&forecast_days=1`;
+  const resp = await fetch(url);
+  if (!resp.ok) throw new Error('Weather API error');
+  return await resp.json();
+}
+
+function displayWeather(data, cityName) {
+  stopClock();
+  stopQueue();
+
+  const cur = data.current;
+  const daily = data.daily;
+  const temp = Math.round(cur.temperature_2m);
+  const hi = Math.round(daily.temperature_2m_max[0]);
+  const lo = Math.round(daily.temperature_2m_min[0]);
+  const wind = Math.round(cur.wind_speed_10m);
+  const humidity = Math.round(cur.relative_humidity_2m);
+  const condition = WMO_CODES[cur.weather_code] || 'UNKNOWN';
+  const unitLabel = weatherUnit === 'C' ? 'C' : 'F';
+  const windLabel = weatherUnit === 'C' ? 'KMH' : 'MPH';
+
+  const lines = [];
+  if (rows >= 6) {
+    lines.push(cityName.toUpperCase());
+    lines.push(temp + '.' + unitLabel);
+    lines.push(condition);
+    lines.push('HI ' + hi + '   LO ' + lo);
+    lines.push('WIND ' + wind + ' ' + windLabel);
+    lines.push('HUMIDITY ' + humidity);
+  } else if (rows >= 3) {
+    lines.push(temp + '.' + unitLabel + '  ' + condition);
+    lines.push('HI ' + hi + '  LO ' + lo);
+    lines.push('WIND ' + wind + ' ' + windLabel + '  HUM ' + humidity);
+  } else {
+    lines.push(temp + '.' + unitLabel + ' ' + condition);
+  }
+
+  setBoardText(lines.join('\n'));
+}
+
+async function showWeather() {
+  if (weatherLat == null || weatherLon == null) {
+    weatherStatus('No location set. Use city search or auto-detect.');
+    return;
+  }
+  weatherStatus('Fetching weather...');
+  try {
+    const data = await fetchWeather(weatherLat, weatherLon);
+    displayWeather(data, weatherCity || 'LOCAL');
+    weatherStatus('Updated: ' + new Date().toLocaleTimeString());
+  } catch (e) {
+    weatherStatus('Error: ' + e.message);
+  }
+}
+
+function startWeatherAutoRefresh() {
+  stopWeatherAutoRefresh();
+  if (!weatherAutoRefresh) return;
+  weatherInterval = setInterval(() => showWeather(), weatherRefreshMin * 60 * 1000);
+}
+
+function stopWeatherAutoRefresh() {
+  if (weatherInterval) { clearInterval(weatherInterval); weatherInterval = null; }
+}
+
 function escHtml(s) {
   return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 }
@@ -1221,6 +1360,7 @@ function persistState() {
     queue,
     queueIntervalSec: parseInt(document.getElementById('queue-interval').value) || 8,
     savedMessages,
+    weatherLat, weatherLon, weatherCity, weatherUnit, weatherAutoRefresh, weatherRefreshMin,
   };
   try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); } catch {}
 }
@@ -1279,6 +1419,30 @@ function loadState() {
     if (Array.isArray(s.savedMessages)) {
       savedMessages = s.savedMessages;
       renderSaved();
+    }
+
+    // Weather
+    if (s.weatherLat != null) weatherLat = s.weatherLat;
+    if (s.weatherLon != null) weatherLon = s.weatherLon;
+    if (s.weatherCity) {
+      weatherCity = s.weatherCity;
+      document.getElementById('weather-city').value = weatherCity;
+    }
+    if (s.weatherUnit === 'C' || s.weatherUnit === 'F') {
+      weatherUnit = s.weatherUnit;
+      document.getElementById('weather-unit-f').classList.toggle('active', weatherUnit === 'F');
+      document.getElementById('weather-unit-c').classList.toggle('active', weatherUnit === 'C');
+    }
+    if (typeof s.weatherAutoRefresh === 'boolean') {
+      weatherAutoRefresh = s.weatherAutoRefresh;
+      document.getElementById('chk-weather-auto').checked = weatherAutoRefresh;
+    }
+    if (s.weatherRefreshMin) {
+      weatherRefreshMin = s.weatherRefreshMin;
+      document.getElementById('weather-refresh-min').value = weatherRefreshMin;
+    }
+    if (weatherLat != null && weatherLon != null) {
+      weatherStatus('Location: ' + (weatherCity || weatherLat.toFixed(2) + ', ' + weatherLon.toFixed(2)));
     }
   } catch {}
 }
@@ -1432,6 +1596,68 @@ document.addEventListener('DOMContentLoaded', () => {
     stopQueue();
     queue = [];
     renderQueue();
+    persistState();
+  });
+
+  // Weather
+  document.getElementById('btn-weather-search').addEventListener('click', async () => {
+    const city = document.getElementById('weather-city').value.trim();
+    if (!city) { weatherStatus('Enter a city name.'); return; }
+    weatherStatus('Searching...');
+    try {
+      const loc = await geocodeCity(city);
+      weatherLat = loc.lat;
+      weatherLon = loc.lon;
+      weatherCity = loc.name + (loc.admin ? ', ' + loc.admin : '');
+      document.getElementById('weather-city').value = weatherCity;
+      weatherStatus('Found: ' + weatherCity + ' (' + loc.lat.toFixed(2) + ', ' + loc.lon.toFixed(2) + ')');
+      persistState();
+    } catch (e) {
+      weatherStatus('Error: ' + e.message);
+    }
+  });
+  document.getElementById('weather-city').addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') { e.preventDefault(); document.getElementById('btn-weather-search').click(); }
+  });
+  document.getElementById('btn-weather-locate').addEventListener('click', () => {
+    if (!navigator.geolocation) { weatherStatus('Geolocation not supported.'); return; }
+    weatherStatus('Detecting location...');
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        weatherLat = pos.coords.latitude;
+        weatherLon = pos.coords.longitude;
+        weatherCity = 'LOCAL';
+        weatherStatus('Location: ' + weatherLat.toFixed(2) + ', ' + weatherLon.toFixed(2));
+        persistState();
+      },
+      (err) => { weatherStatus('Error: ' + err.message); }
+    );
+  });
+  document.getElementById('btn-weather-show').addEventListener('click', () => {
+    showWeather();
+    if (weatherAutoRefresh) startWeatherAutoRefresh();
+  });
+  document.getElementById('chk-weather-auto').addEventListener('change', (e) => {
+    weatherAutoRefresh = e.target.checked;
+    if (weatherAutoRefresh) startWeatherAutoRefresh(); else stopWeatherAutoRefresh();
+    persistState();
+  });
+  document.getElementById('weather-refresh-min').addEventListener('change', (e) => {
+    weatherRefreshMin = Math.max(5, parseInt(e.target.value) || 15);
+    e.target.value = weatherRefreshMin;
+    if (weatherAutoRefresh) startWeatherAutoRefresh();
+    persistState();
+  });
+  document.getElementById('weather-unit-f').addEventListener('click', () => {
+    weatherUnit = 'F';
+    document.getElementById('weather-unit-f').classList.add('active');
+    document.getElementById('weather-unit-c').classList.remove('active');
+    persistState();
+  });
+  document.getElementById('weather-unit-c').addEventListener('click', () => {
+    weatherUnit = 'C';
+    document.getElementById('weather-unit-c').classList.add('active');
+    document.getElementById('weather-unit-f').classList.remove('active');
     persistState();
   });
 
