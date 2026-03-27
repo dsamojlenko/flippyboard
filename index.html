@@ -695,7 +695,7 @@ label {
         </div>
         <div style="flex:0 0 auto">
           <label>&nbsp;</label>
-          <button class="btn btn-sm" id="btn-weather-locate">Auto-Detect</button>
+          <button class="btn" id="btn-weather-locate">Auto-Detect</button>
         </div>
       </div>
       <div id="weather-status" style="color:var(--text-dim);font-size:11px;margin-top:8px"></div>
@@ -2469,11 +2469,24 @@ document.addEventListener('DOMContentLoaded', () => {
     if (!navigator.geolocation) { weatherStatus('Geolocation not supported.'); return; }
     weatherStatus('Detecting location...');
     navigator.geolocation.getCurrentPosition(
-      (pos) => {
+      async (pos) => {
         weatherLat = pos.coords.latitude;
         weatherLon = pos.coords.longitude;
         weatherCity = 'LOCAL';
         weatherStatus('Location: ' + weatherLat.toFixed(2) + ', ' + weatherLon.toFixed(2));
+        // Reverse geocode to get city name
+        try {
+          const resp = await fetch(`https://nominatim.openstreetmap.org/reverse?lat=${weatherLat}&lon=${weatherLon}&format=json&zoom=10`);
+          if (resp.ok) {
+            const geo = await resp.json();
+            const name = geo.address?.city || geo.address?.town || geo.address?.village || geo.address?.municipality || '';
+            if (name) {
+              weatherCity = name;
+              document.getElementById('weather-city').value = name;
+              weatherStatus('Location: ' + name);
+            }
+          }
+        } catch {}
         persistState();
       },
       (err) => { weatherStatus('Error: ' + err.message); }
