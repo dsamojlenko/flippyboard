@@ -659,7 +659,8 @@ label {
       <textarea id="text-input" placeholder="Type your message..." spellcheck="false"></textarea>
       <div class="inline-row">
         <button class="btn" id="btn-send">Send</button>
-        <button class="btn btn-sm" id="btn-save">Save Message</button>
+        <button class="btn" id="btn-save">Save Message</button>
+        <button class="btn" id="btn-queue-text">Add to Queue</button>
         <button class="btn btn-sm" id="btn-clear" style="margin-left:auto">Clear Board</button>
       </div>
     </div>
@@ -761,16 +762,11 @@ label {
         <div style="flex:0 0 auto">
           <label>Type</label>
           <select id="queue-type" style="width:auto">
-            <option value="text">Text</option>
             <option value="clock">Clock</option>
             <option value="worldclock">World Clock</option>
             <option value="weather">Weather</option>
             <option value="saved">Saved Message</option>
           </select>
-        </div>
-        <div style="flex:3" id="queue-text-wrap">
-          <label>Message</label>
-          <input type="text" id="queue-input" placeholder="Enter a message...">
         </div>
         <div style="flex:3;display:none" id="queue-saved-wrap">
           <label>Saved message</label>
@@ -2382,25 +2378,17 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Queue
   const queueType = document.getElementById('queue-type');
-  const queueTextWrap = document.getElementById('queue-text-wrap');
   const queueSavedWrap = document.getElementById('queue-saved-wrap');
 
   queueType.addEventListener('change', () => {
     const t = queueType.value;
-    queueTextWrap.style.display = t === 'text' ? '' : 'none';
     queueSavedWrap.style.display = t === 'saved' ? '' : 'none';
     if (t === 'saved') updateQueueSavedSelect();
   });
 
   document.getElementById('btn-queue-add').addEventListener('click', () => {
     const t = queueType.value;
-    if (t === 'text') {
-      const input = document.getElementById('queue-input');
-      if (!input.value.trim()) return;
-      addToQueue({ type: 'text', text: input.value.trim() });
-      input.value = '';
-      input.focus();
-    } else if (t === 'clock') {
+    if (t === 'clock') {
       addToQueue({ type: 'clock' });
     } else if (t === 'worldclock') {
       addToQueue({ type: 'worldclock' });
@@ -2415,9 +2403,6 @@ document.addEventListener('DOMContentLoaded', () => {
       const text = typeof entry === 'string' ? entry : entry.text;
       addToQueue({ type: 'saved', name, text, alignH: entry.alignH, alignV: entry.alignV, fillColor: entry.fillColor, borderColor: entry.borderColor });
     }
-  });
-  document.getElementById('queue-input').addEventListener('keydown', (e) => {
-    if (e.key === 'Enter') { e.preventDefault(); document.getElementById('btn-queue-add').click(); }
   });
   document.getElementById('queue-list').addEventListener('click', (e) => {
     if (e.target.classList.contains('remove')) {
@@ -2548,6 +2533,13 @@ document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('btn-save').addEventListener('click', () => {
     const text = document.getElementById('text-input').value;
     if (text.trim()) saveMessage(text);
+  });
+
+  // Add to queue from text tab
+  document.getElementById('btn-queue-text').addEventListener('click', () => {
+    const text = document.getElementById('text-input').value;
+    if (!text.trim()) return;
+    addToQueue({ type: 'saved', name: text.trim().slice(0, 40), text: text.trim(), alignH, alignV, fillColor, borderColor });
   });
 
   // Saved messages pane
