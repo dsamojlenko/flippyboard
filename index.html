@@ -1800,7 +1800,7 @@ function displayWeather(data, cityName) {
     lines.push(temp + '.' + unitLabel + ' ' + condition);
   }
 
-  return setBoardText(lines.join('\n'));
+  return setBoardText(lines.join('\n'), null, null, null, null);
 }
 
 async function showWeather() {
