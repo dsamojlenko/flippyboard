@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Flippy Board — Display</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@600;700&family=Azeret+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/shared/board.css">
+<link rel="stylesheet" href="/shared/theme.css">
+<style>
+  html, body {
+    height: 100%;
+    margin: 0;
+    background: linear-gradient(145deg, #111114 0%, #18181c 40%, #14141a 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+  }
+  .board-frame { margin: 0; }
+  .conn-status {
+    position: fixed;
+    top: 8px;
+    right: 12px;
+    font-family: var(--font-ui);
+    font-size: 10px;
+    color: var(--text-dim);
+    opacity: 0.6;
+    transition: opacity 0.3s;
+  }
+  .conn-status.disconnected { color: var(--danger); opacity: 1; }
+</style>
+</head>
+<body>
+
+<div class="board-frame">
+  <div class="board-inner">
+    <div class="board" id="board"></div>
+  </div>
+</div>
+<div class="conn-status" id="conn-status">connecting...</div>
+
+<script type="module">
+import { Board, formatClockLines, formatWorldClockLines, formatWeatherLines } from '/shared/board.js';
+import { initAudio, setSoundEnabled, resumeAudioContext } from '/shared/audio.js';
+
+// Board setup — always use fullscreen sizing for the display page
+const boardEl = document.getElementById('board');
+let board = new Board(boardEl, { rows: 6, cols: 22, fullFlip: true });
+board.sizeTiles(true);
+
+// Init audio eagerly so the display page can play sound via WS commands.
+// The AudioContext starts suspended; it auto-resumes on the first user gesture.
+initAudio();
+document.addEventListener('click', () => resumeAudioContext(), { once: true });
+document.addEventListener('touchstart', () => resumeAudioContext(), { once: true });
+
+// --- WebSocket ---
+let ws = null;
+let reconnectDelay = 1000;
+const MAX_RECONNECT_DELAY = 30000;
+const statusEl = document.getElementById('conn-status');
+
+// Clock/WorldClock intervals (run locally)
+let clockInterval = null;
+let worldClockInterval = null;
+let clockConfig = null;      // { is24h, timezone }
+let worldClockConfig = null;  // { cities, is24h }
+let lastClockStr = '';
+let lastWorldClockStr = '';
+
+function stopClock() {
+  if (clockInterval) { clearInterval(clockInterval); clockInterval = null; }
+  clockConfig = null;
+}
+
+function stopWorldClock() {
+  if (worldClockInterval) { clearInterval(worldClockInterval); worldClockInterval = null; }
+  worldClockConfig = null;
+}
+
+function startClock(config) {
+  stopClock();
+  stopWorldClock();
+  clockConfig = config;
+  lastClockStr = '';
+  updateClock();
+  clockInterval = setInterval(updateClock, 1000);
+}
+
+function updateClock() {
+  if (!clockConfig) return;
+  const lines = formatClockLines(board.rows, board.cols, clockConfig.is24h, clockConfig.timezone);
+  const sig = lines.join('|');
+  if (sig === lastClockStr) return;
+  lastClockStr = sig;
+  board.setBoard(lines);
+}
+
+function startWorldClock(config) {
+  stopClock();
+  stopWorldClock();
+  worldClockConfig = config;
+  lastWorldClockStr = '';
+  updateWorldClock();
+  worldClockInterval = setInterval(updateWorldClock, 1000);
+}
+
+function updateWorldClock() {
+  if (!worldClockConfig) return;
+  const lines = formatWorldClockLines(board.rows, board.cols, worldClockConfig.cities, worldClockConfig.is24h);
+  const sig = lines.join('|');
+  if (sig === lastWorldClockStr) return;
+  lastWorldClockStr = sig;
+  board.setBoard(lines);
+}
+
+function shouldPlaySound(s) {
+  const dest = s.soundDestination || 'display';
+  return dest === 'display' || dest === 'both';
+}
+
+function handleMessage(msg) {
+  switch (msg.action) {
+    case 'sync': {
+      const s = msg.settings;
+      const rows = parseInt(s.rows) || 6;
+      const cols = parseInt(s.cols) || 22;
+      if (rows !== board.rows || cols !== board.cols) {
+        board.resize(rows, cols);
+        board.sizeTiles(true);
+      }
+      board.fullFlip = s.fullFlip === 'true';
+      setSoundEnabled(shouldPlaySound(s));
+      // Restore current mode
+      if (msg.currentMode) handleMessage(msg.currentMode);
+      break;
+    }
+    case 'setText': {
+      stopClock();
+      stopWorldClock();
+      board.setBoardText(
+        msg.text || '',
+        msg.alignH || 'center',
+        msg.alignV || 'middle',
+        msg.fillColor || null,
+        msg.borderColor || null
+      );
+      break;
+    }
+    case 'setRows': {
+      stopClock();
+      stopWorldClock();
+      board.setBoard(msg.rows);
+      break;
+    }
+    case 'clear': {
+      stopClock();
+      stopWorldClock();
+      board.clearBoard();
+      break;
+    }
+    case 'startClock': {
+      startClock({ is24h: msg.is24h, timezone: msg.timezone });
+      break;
+    }
+    case 'stopClock': {
+      stopClock();
+      break;
+    }
+    case 'startWorldClock': {
+      startWorldClock({ cities: msg.cities, is24h: msg.is24h });
+      break;
+    }
+    case 'stopWorldClock': {
+      stopWorldClock();
+      break;
+    }
+    case 'showWeather': {
+      stopClock();
+      stopWorldClock();
+      const lines = formatWeatherLines(board.rows, board.cols, msg.data, msg.city, msg.unit);
+      board.setBoardText(lines.join('\n'));
+      break;
+    }
+    case 'updateSettings': {
+      const s = msg.settings;
+      const rows = parseInt(s.rows) || board.rows;
+      const cols = parseInt(s.cols) || board.cols;
+      if (rows !== board.rows || cols !== board.cols) {
+        board.resize(rows, cols);
+        board.sizeTiles(true);
+      }
+      board.fullFlip = s.fullFlip === 'true';
+      setSoundEnabled(shouldPlaySound(s));
+      break;
+    }
+    case 'queueStatus':
+      // Display page doesn't need to do anything with this
+      break;
+  }
+}
+
+function connect() {
+  const proto = location.protocol === 'https:' ? 'wss:' : 'ws:';
+  ws = new WebSocket(`${proto}//${location.host}`);
+  statusEl.textContent = 'connecting...';
+  statusEl.classList.remove('disconnected');
+
+  ws.onopen = () => {
+    statusEl.textContent = 'connected';
+    reconnectDelay = 1000;
+    setTimeout(() => { statusEl.style.opacity = '0'; }, 2000);
+  };
+
+  ws.onmessage = (e) => {
+    try {
+      const msg = JSON.parse(e.data);
+      handleMessage(msg);
+    } catch {}
+  };
+
+  ws.onclose = () => {
+    statusEl.textContent = 'disconnected — reconnecting...';
+    statusEl.classList.add('disconnected');
+    statusEl.style.opacity = '';
+    setTimeout(connect, reconnectDelay);
+    reconnectDelay = Math.min(reconnectDelay * 2, MAX_RECONNECT_DELAY);
+  };
+
+  ws.onerror = () => { ws.close(); };
+}
+
+// Display page always uses fullscreen sizing
+window.addEventListener('resize', () => board.sizeTiles(true));
+document.addEventListener('fullscreenchange', () => board.sizeTiles(true));
+
+// Tab visibility handling
+document.addEventListener('visibilitychange', () => {
+  if (document.hidden) {
+    // Pause local ticking
+    if (clockInterval) { clearInterval(clockInterval); clockInterval = null; }
+    if (worldClockInterval) { clearInterval(worldClockInterval); worldClockInterval = null; }
+  } else {
+    resumeAudioContext();
+    board.forceResetAll();
+    // Resume local ticking
+    if (clockConfig) {
+      lastClockStr = '';
+      clockInterval = setInterval(updateClock, 1000);
+      updateClock();
+    }
+    if (worldClockConfig) {
+      lastWorldClockStr = '';
+      worldClockInterval = setInterval(updateWorldClock, 1000);
+      updateWorldClock();
+    }
+  }
+});
+
+connect();
+</script>
+</body>
+</html>
