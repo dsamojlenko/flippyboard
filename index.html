@@ -645,9 +645,22 @@ label {
     <!-- QUEUE -->
     <div class="tab-pane" id="pane-queue">
       <div class="row">
-        <div style="flex:3">
-          <label>Add message</label>
+        <div style="flex:0 0 auto">
+          <label>Type</label>
+          <select id="queue-type" style="width:auto">
+            <option value="text">Text</option>
+            <option value="clock">Clock</option>
+            <option value="weather">Weather</option>
+            <option value="saved">Saved Message</option>
+          </select>
+        </div>
+        <div style="flex:3" id="queue-text-wrap">
+          <label>Message</label>
           <input type="text" id="queue-input" placeholder="Enter a message...">
+        </div>
+        <div style="flex:3;display:none" id="queue-saved-wrap">
+          <label>Saved message</label>
+          <select id="queue-saved-select" style="width:100%"></select>
         </div>
         <div style="flex:0 0 auto">
           <label>&nbsp;</label>
@@ -1150,13 +1163,18 @@ function updateClock() {
 // ═══════════════════════════════════════
 //  MESSAGE QUEUE
 // ═══════════════════════════════════════
-let queue = [];
+let queue = []; // Array of { type: 'text'|'clock'|'weather'|'saved', text?, name? }
 let queueIdx = 0;
 let queueInterval = null;
 
-function addToQueue(msg) {
-  if (!msg.trim()) return;
-  queue.push(msg.trim());
+// Normalize legacy plain-string queue entries
+function normalizeQueueItem(item) {
+  if (typeof item === 'string') return { type: 'text', text: item };
+  return item;
+}
+
+function addToQueue(item) {
+  queue.push(item);
   renderQueue();
   persistState();
 }
@@ -1168,13 +1186,23 @@ function removeFromQueue(idx) {
   persistState();
 }
 
+function queueItemLabel(item) {
+  item = normalizeQueueItem(item);
+  if (item.type === 'clock') return '\u23F0 Clock';
+  if (item.type === 'weather') return '\u2601 Weather';
+  if (item.type === 'saved') return '\u2605 ' + (item.name || 'Saved');
+  return item.text || '';
+}
+
 function renderQueue() {
   const list = document.getElementById('queue-list');
   list.innerHTML = '';
-  queue.forEach((msg, i) => {
+  queue.forEach((raw, i) => {
+    const item = normalizeQueueItem(raw);
     const li = document.createElement('li');
     li.className = 'queue-item';
-    li.innerHTML = `<span class="idx">${i + 1}</span><span class="msg">${escHtml(msg)}</span><span class="remove" data-idx="${i}">&times;</span>`;
+    const label = queueItemLabel(item);
+    li.innerHTML = `<span class="idx">${i + 1}</span><span class="msg">${escHtml(label)}</span><span class="remove" data-idx="${i}">&times;</span>`;
     list.appendChild(li);
   });
 }
@@ -1182,6 +1210,7 @@ function renderQueue() {
 function startQueue() {
   if (queue.length === 0) return;
   stopClock();
+  stopWeatherAutoRefresh();
   queueIdx = 0;
   showQueueMessage();
   const sec = parseInt(document.getElementById('queue-interval').value) || 8;
@@ -1197,9 +1226,39 @@ function stopQueue() {
   document.getElementById('btn-queue-start').textContent = 'Start Rotation';
 }
 
-function showQueueMessage() {
-  if (queue.length === 0) return;
-  setBoardText(queue[queueIdx]);
+let _queueBusy = false;
+async function showQueueMessage() {
+  if (queue.length === 0 || _queueBusy) return;
+  const item = normalizeQueueItem(queue[queueIdx]);
+  if (item.type === 'clock') {
+    lastClockStr = '';
+    updateClock();
+  } else if (item.type === 'weather') {
+    _queueBusy = true;
+    try { await showWeather(); } finally { _queueBusy = false; }
+  } else {
+    // text or saved
+    setBoardText(item.text || '');
+  }
+}
+
+function updateQueueSavedSelect() {
+  const sel = document.getElementById('queue-saved-select');
+  sel.innerHTML = '';
+  if (savedMessages.length === 0) {
+    const opt = document.createElement('option');
+    opt.textContent = '(no saved messages)';
+    opt.disabled = true;
+    sel.appendChild(opt);
+    return;
+  }
+  savedMessages.forEach((entry, i) => {
+    const name = typeof entry === 'string' ? entry.slice(0, 40) : entry.name;
+    const opt = document.createElement('option');
+    opt.value = i;
+    opt.textContent = name;
+    sel.appendChild(opt);
+  });
 }
 
 // ═══════════════════════════════════════
@@ -1248,8 +1307,7 @@ async function fetchWeather(lat, lon) {
 }
 
 function displayWeather(data, cityName) {
-  stopClock();
-  stopQueue();
+  if (!queueInterval) { stopClock(); }
 
   const cur = data.current;
   const daily = data.daily;
@@ -1574,11 +1632,38 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   // Queue
+  const queueType = document.getElementById('queue-type');
+  const queueTextWrap = document.getElementById('queue-text-wrap');
+  const queueSavedWrap = document.getElementById('queue-saved-wrap');
+
+  queueType.addEventListener('change', () => {
+    const t = queueType.value;
+    queueTextWrap.style.display = t === 'text' ? '' : 'none';
+    queueSavedWrap.style.display = t === 'saved' ? '' : 'none';
+    if (t === 'saved') updateQueueSavedSelect();
+  });
+
   document.getElementById('btn-queue-add').addEventListener('click', () => {
-    const input = document.getElementById('queue-input');
-    addToQueue(input.value);
-    input.value = '';
-    input.focus();
+    const t = queueType.value;
+    if (t === 'text') {
+      const input = document.getElementById('queue-input');
+      if (!input.value.trim()) return;
+      addToQueue({ type: 'text', text: input.value.trim() });
+      input.value = '';
+      input.focus();
+    } else if (t === 'clock') {
+      addToQueue({ type: 'clock' });
+    } else if (t === 'weather') {
+      addToQueue({ type: 'weather' });
+    } else if (t === 'saved') {
+      const sel = document.getElementById('queue-saved-select');
+      const idx = parseInt(sel.value);
+      if (isNaN(idx) || !savedMessages[idx]) return;
+      const entry = savedMessages[idx];
+      const name = typeof entry === 'string' ? entry.slice(0, 40) : entry.name;
+      const text = typeof entry === 'string' ? entry : entry.text;
+      addToQueue({ type: 'saved', name, text });
+    }
   });
   document.getElementById('queue-input').addEventListener('keydown', (e) => {
     if (e.key === 'Enter') { e.preventDefault(); document.getElementById('btn-queue-add').click(); }
