@@ -1149,11 +1149,23 @@ function parseColorCodes(text) {
   });
 }
 
+function expandJustify(text, width) {
+  return text.split('\n').map(line => {
+    const idx = line.indexOf('{>}');
+    if (idx === -1) return line;
+    const left = line.slice(0, idx);
+    const right = line.slice(idx + 3);
+    const gap = Math.max(1, width - left.length - right.length);
+    return left + ' '.repeat(gap) + right;
+  }).join('\n');
+}
+
 function setBoardText(text, hAlign, vAlign) {
   hAlign = hAlign || alignH;
   vAlign = vAlign || alignV;
 
   text = parseColorCodes(text);
+  text = expandJustify(text, cols);
   const lines = wordWrap(text.toUpperCase(), cols);
 
   // Horizontal alignment — pad each line
@@ -2088,6 +2100,7 @@ document.addEventListener('DOMContentLoaded', () => {
   // Fill & Border action swatches
   function layoutTextForBoard(text, numCols, numRows, hAlign, vAlign) {
     text = parseColorCodes(text);
+    text = expandJustify(text, numCols);
     const lines = wordWrap(text.toUpperCase(), numCols);
     const aligned = lines.map(line => {
       if (line.length >= numCols) return line.slice(0, numCols);
