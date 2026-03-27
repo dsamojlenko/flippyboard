@@ -576,6 +576,9 @@ label {
         <label>Cols</label>
         <input type="number" id="cfg-cols" value="22" min="6" max="44">
         <button class="btn btn-sm" id="btn-resize">Apply</button>
+        <label style="margin-left:auto;display:flex;align-items:center;gap:6px">
+          <input type="checkbox" id="chk-full-flip"> Full flip
+        </label>
       </div>
     </div>
 
@@ -817,7 +820,8 @@ class Tile {
     const dist = (tgtIdx - curIdx + CHARS.length) % CHARS.length;
     let steps = [];
 
-    if (dist <= 5) {
+    if (fullFlip || dist <= 5) {
+      // Flip through every character in sequence
       for (let i = 1; i <= dist; i++) steps.push(CHARS[(curIdx + i) % CHARS.length]);
     } else {
       // Pick 3-4 evenly spaced intermediates, then target
@@ -966,6 +970,7 @@ function setBoard(lines) {
 
 let alignH = 'left';
 let alignV = 'middle';
+let fullFlip = false;
 
 // Parse color codes like {R} {G} {B} etc. into PUA characters
 function parseColorCodes(text) {
@@ -1169,13 +1174,13 @@ function escHtml(s) {
 // ═══════════════════════════════════════
 //  SAVED MESSAGES
 // ═══════════════════════════════════════
-let savedMessages = [];
+let savedMessages = []; // Array of { name, text }
 
-function saveMessage(msg) {
-  if (!msg.trim()) return;
-  // Avoid duplicates
-  if (savedMessages.includes(msg.trim())) return;
-  savedMessages.push(msg.trim());
+function saveMessage(text) {
+  if (!text.trim()) return;
+  const name = prompt('Name for this message:', text.trim().slice(0, 40));
+  if (name === null) return; // cancelled
+  savedMessages.push({ name: name.trim() || 'Untitled', text: text.trim() });
   persistState();
   renderSaved();
 }
@@ -1193,10 +1198,14 @@ function renderSaved() {
     list.innerHTML = '<p class="saved-empty">No saved messages yet. Use "Save Message" in the Text tab.</p>';
     return;
   }
-  savedMessages.forEach((msg, i) => {
+  savedMessages.forEach((entry, i) => {
+    // Support legacy plain-string entries
+    const name = typeof entry === 'string' ? entry.slice(0, 40) : entry.name;
+    const text = typeof entry === 'string' ? entry : entry.text;
+    const preview = text.length > 60 ? text.slice(0, 57) + '...' : text;
     const li = document.createElement('li');
     li.className = 'saved-item';
-    li.innerHTML = `<span class="idx">${i + 1}</span><span class="msg" data-idx="${i}">${escHtml(msg)}</span><span class="remove" data-idx="${i}">&times;</span>`;
+    li.innerHTML = `<span class="idx">${i + 1}</span><span class="msg" data-idx="${i}" title="${escHtml(text.replace(/\n/g, ' '))}"><strong>${escHtml(name)}</strong> <span style="color:var(--text-dim)">${escHtml(preview.replace(/\n/g, ' '))}</span></span><span class="remove" data-idx="${i}">&times;</span>`;
     list.appendChild(li);
   });
 }
@@ -1208,7 +1217,7 @@ const STORAGE_KEY = 'splitflap_state';
 
 function persistState() {
   const state = {
-    rows, cols, alignH, alignV, soundEnabled, is24h,
+    rows, cols, alignH, alignV, soundEnabled, is24h, fullFlip,
     queue,
     queueIntervalSec: parseInt(document.getElementById('queue-interval').value) || 8,
     savedMessages,
@@ -1251,6 +1260,11 @@ function loadState() {
     if (typeof s.is24h === 'boolean') {
       is24h = s.is24h;
       document.getElementById('chk-24h').checked = is24h;
+    }
+
+    if (typeof s.fullFlip === 'boolean') {
+      fullFlip = s.fullFlip;
+      document.getElementById('chk-full-flip').checked = fullFlip;
     }
 
     if (Array.isArray(s.queue)) {
@@ -1379,6 +1393,12 @@ document.addEventListener('DOMContentLoaded', () => {
     persistState();
   });
 
+  // Full flip toggle
+  document.getElementById('chk-full-flip').addEventListener('change', (e) => {
+    fullFlip = e.target.checked;
+    persistState();
+  });
+
   // Clock
   document.getElementById('btn-clock-toggle').addEventListener('click', () => {
     clockInterval ? stopClock() : startClock();
@@ -1425,10 +1445,12 @@ document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('saved-list').addEventListener('click', (e) => {
     if (e.target.classList.contains('remove')) {
       removeSaved(parseInt(e.target.dataset.idx));
-    } else if (e.target.classList.contains('msg')) {
+    } else if (e.target.closest('.msg')) {
       // Load into text input and switch to Text tab
-      const idx = parseInt(e.target.dataset.idx);
-      document.getElementById('text-input').value = savedMessages[idx];
+      const msgEl = e.target.closest('.msg');
+      const idx = parseInt(msgEl.dataset.idx);
+      const entry = savedMessages[idx];
+      document.getElementById('text-input').value = typeof entry === 'string' ? entry : entry.text;
       document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
       document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
       document.querySelector('.tab[data-tab="text"]').classList.add('active');
