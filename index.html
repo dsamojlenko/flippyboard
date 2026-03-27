@@ -784,6 +784,7 @@ async function initAudio() {
 
 function playClick() {
   if (!soundEnabled || !audioCtx || !flipBuffer) return;
+  if (audioCtx.state === 'suspended') audioCtx.resume();
 
   const src = audioCtx.createBufferSource();
   src.buffer = flipBuffer;
@@ -859,6 +860,15 @@ class Tile {
     this._aborted = true;
   }
 
+  forceReset() {
+    this.flapTop.el.classList.remove('flip');
+    this.flapBottom.el.classList.remove('flip');
+    this.flapTop.el.style.background = '';
+    this.flapBottom.el.style.background = '';
+    this._display(this.currentChar);
+    this.flipping = false;
+  }
+
   async flipTo(target, delay = 0) {
     target = sanitize(target);
     if (target === this.currentChar && !this.flipping) return;
@@ -932,7 +942,12 @@ class Tile {
       // Phase 1: flip top away
       this.flapTop.el.classList.add('flip');
 
+      let p1Done = false;
+      let p1Timer;
       const onP1 = () => {
+        if (p1Done) return;
+        p1Done = true;
+        clearTimeout(p1Timer);
         this.flapTop.el.removeEventListener('animationend', onP1);
         this.flapTop.el.classList.remove('flip');
         this.flapTop.el.style.background = '';
@@ -941,7 +956,12 @@ class Tile {
         // Phase 2: flip bottom in
         this.flapBottom.el.classList.add('flip');
 
+        let p2Done = false;
+        let p2Timer;
         const onP2 = () => {
+          if (p2Done) return;
+          p2Done = true;
+          clearTimeout(p2Timer);
           this.flapBottom.el.removeEventListener('animationend', onP2);
           this.flapBottom.el.classList.remove('flip');
           this.flapBottom.el.style.background = '';
@@ -949,8 +969,10 @@ class Tile {
           resolve();
         };
         this.flapBottom.el.addEventListener('animationend', onP2);
+        p2Timer = setTimeout(onP2, 200);
       };
       this.flapTop.el.addEventListener('animationend', onP1);
+      p1Timer = setTimeout(onP1, 200);
     });
   }
 }
@@ -1888,6 +1910,51 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Resize handler
   window.addEventListener('resize', () => sizeTiles());
+
+  // Handle tab visibility changes to prevent stuck animations and interval buildup
+  let queueWasPaused = false;
+  let clockWasPaused = false;
+  document.addEventListener('visibilitychange', () => {
+    if (document.hidden) {
+      // Pause intervals to prevent callback buildup in background tabs
+      if (queueInterval) {
+        clearInterval(queueInterval);
+        queueInterval = null;
+        queueWasPaused = true;
+      }
+      if (clockInterval) {
+        clearInterval(clockInterval);
+        clockInterval = null;
+        clockWasPaused = true;
+      }
+    } else {
+      // Resume AudioContext if browser suspended it
+      if (audioCtx && audioCtx.state === 'suspended') {
+        audioCtx.resume();
+      }
+      // Force-reset any tiles stuck mid-flip
+      for (const row of tiles) {
+        for (const t of row) t.forceReset();
+      }
+      // Restart queue if it was running
+      if (queueWasPaused && queue.length > 0) {
+        queueWasPaused = false;
+        const sec = parseInt(document.getElementById('queue-interval').value) || 8;
+        queueInterval = setInterval(() => {
+          queueIdx = (queueIdx + 1) % queue.length;
+          showQueueMessage();
+        }, sec * 1000);
+        showQueueMessage();
+      }
+      // Restart clock if it was running
+      if (clockWasPaused) {
+        clockWasPaused = false;
+        lastClockStr = '';
+        clockInterval = setInterval(updateClock, 1000);
+        updateClock();
+      }
+    }
+  });
 
   // Welcome message after a brief delay
   setTimeout(() => {
