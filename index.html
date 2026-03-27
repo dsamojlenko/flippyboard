@@ -529,6 +529,7 @@ label {
     <button class="tab" data-tab="saved">Saved</button>
     <button class="tab" data-tab="queue">Queue</button>
     <button class="tab" data-tab="api">API</button>
+    <button class="tab" data-tab="settings">Settings</button>
   </div>
 
   <div class="tab-content">
@@ -578,16 +579,6 @@ label {
         <button class="btn" id="btn-send">Send</button>
         <button class="btn btn-sm" id="btn-save">Save Message</button>
         <button class="btn btn-sm" id="btn-clear" style="margin-left:auto">Clear Board</button>
-      </div>
-      <div class="config-row">
-        <label>Rows</label>
-        <input type="number" id="cfg-rows" value="6" min="1" max="12">
-        <label>Cols</label>
-        <input type="number" id="cfg-cols" value="22" min="6" max="44">
-        <button class="btn btn-sm" id="btn-resize">Apply</button>
-        <label style="margin-left:auto;display:flex;align-items:center;gap:6px">
-          <input type="checkbox" id="chk-full-flip"> Full flip
-        </label>
       </div>
     </div>
 
@@ -725,6 +716,25 @@ iframe.contentWindow.postMessage(
           Drag this to your bookmarks bar, then click it on any page to send text to the board:
         </p>
         <div class="code-block" style="user-select:all;cursor:copy">javascript:void(new BroadcastChannel('splitflap').postMessage({text:prompt('Message:')}))</div>
+      </div>
+    </div>
+
+    <!-- SETTINGS -->
+    <div class="tab-pane" id="pane-settings">
+      <div class="config-row">
+        <label>Rows</label>
+        <input type="number" id="cfg-rows" value="6" min="1" max="12">
+        <label>Cols</label>
+        <input type="number" id="cfg-cols" value="22" min="6" max="44">
+        <button class="btn btn-sm" id="btn-resize">Apply</button>
+        <label style="margin-left:auto;display:flex;align-items:center;gap:6px">
+          <input type="checkbox" id="chk-full-flip"> Full flip
+        </label>
+      </div>
+      <div class="config-row" style="margin-top:12px">
+        <button class="btn btn-sm" id="btn-export">Export Config</button>
+        <button class="btn btn-sm" id="btn-import">Import Config</button>
+        <input type="file" id="import-file" accept=".json" style="display:none">
       </div>
     </div>
   </div>
@@ -1537,6 +1547,40 @@ function loadState() {
   } catch {}
 }
 
+function exportConfig() {
+  persistState();
+  const raw = localStorage.getItem(STORAGE_KEY);
+  if (!raw) return;
+  const blob = new Blob([JSON.stringify(JSON.parse(raw), null, 2)], { type: 'application/json' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'flippyboard-config.json';
+  a.click();
+  URL.revokeObjectURL(a.href);
+}
+
+function importConfig(file) {
+  const reader = new FileReader();
+  reader.onload = () => {
+    try {
+      const s = JSON.parse(reader.result);
+      if (typeof s !== 'object' || s === null || !('rows' in s) || !('cols' in s)) {
+        alert('Invalid config file.');
+        return;
+      }
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(s));
+      loadState();
+      buildBoard();
+      renderSaved();
+      updateQueueSavedSelect();
+      sizeTiles();
+    } catch {
+      alert('Failed to parse config file.');
+    }
+  };
+  reader.readAsText(file);
+}
+
 // ═══════════════════════════════════════
 //  BROADCAST CHANNEL
 // ═══════════════════════════════════════
@@ -1730,6 +1774,15 @@ document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('chk-full-flip').addEventListener('change', (e) => {
     fullFlip = e.target.checked;
     persistState();
+  });
+
+  // Export / Import
+  const importFileInput = document.getElementById('import-file');
+  document.getElementById('btn-export').addEventListener('click', exportConfig);
+  document.getElementById('btn-import').addEventListener('click', () => importFileInput.click());
+  importFileInput.addEventListener('change', (e) => {
+    if (e.target.files[0]) importConfig(e.target.files[0]);
+    e.target.value = '';
   });
 
   // Clock
