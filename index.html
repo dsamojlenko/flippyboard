@@ -488,6 +488,7 @@ label {
 .queue-item .idx, .saved-item .idx { color: var(--text-dim); font-size: 10px; min-width: 20px; }
 .queue-item .remove, .saved-item .remove { cursor: pointer; color: var(--text-dim); font-size: 14px; padding: 0 4px; }
 .queue-item .remove:hover, .saved-item .remove:hover { color: var(--danger); }
+.saved-item .queue-add { flex-shrink: 0; margin: -2px 4px -2px 0; }
 .queue-item.active {
   border-left: 3px solid var(--accent);
   background: rgba(0,0,0,0.25);
@@ -684,6 +685,7 @@ label {
       <div id="weather-status" style="color:var(--text-dim);font-size:11px;margin-top:8px"></div>
       <div class="inline-row" style="margin-top:12px">
         <button class="btn" id="btn-weather-show">Show Weather</button>
+        <button class="btn" id="btn-weather-queue">Add to Queue</button>
         <label style="margin:0;display:flex;align-items:center;gap:6px">
           <input type="checkbox" id="chk-weather-auto"> Auto-refresh
         </label>
@@ -713,6 +715,7 @@ label {
       </div>
       <div class="inline-row">
         <button class="btn" id="btn-clock-toggle">Start Clock</button>
+        <button class="btn" id="btn-clock-queue">Add to Queue</button>
       </div>
     </div>
 
@@ -723,6 +726,7 @@ label {
       </p>
       <div class="inline-row">
         <button class="btn" id="btn-worldclock-toggle">Start World Clock</button>
+        <button class="btn" id="btn-worldclock-queue">Add to Queue</button>
         <button class="btn btn-sm" id="btn-worldclock-random">Randomize</button>
       </div>
       <div class="row" style="margin-top:12px">
@@ -758,25 +762,9 @@ label {
 
     <!-- QUEUE -->
     <div class="tab-pane" id="pane-queue">
-      <div class="row">
-        <div style="flex:0 0 auto">
-          <label>Type</label>
-          <select id="queue-type" style="width:auto">
-            <option value="clock">Clock</option>
-            <option value="worldclock">World Clock</option>
-            <option value="weather">Weather</option>
-            <option value="saved">Saved Message</option>
-          </select>
-        </div>
-        <div style="flex:3;display:none" id="queue-saved-wrap">
-          <label>Saved message</label>
-          <select id="queue-saved-select" style="width:100%"></select>
-        </div>
-        <div style="flex:0 0 auto">
-          <label>&nbsp;</label>
-          <button class="btn" id="btn-queue-add">Add</button>
-        </div>
-      </div>
+      <p style="color:var(--text-dim);margin-bottom:12px;line-height:1.5">
+        Use the "Add to Queue" buttons on the Text, Clock, World Clock, and Weather tabs, or the "Queue" button on saved messages, to build your rotation.
+      </p>
       <ul class="queue-list" id="queue-list"></ul>
       <div class="inline-row" style="margin-top:12px">
         <button class="btn" id="btn-queue-start">Start Rotation</button>
@@ -1612,24 +1600,7 @@ async function showQueueMessage() {
   }
 }
 
-function updateQueueSavedSelect() {
-  const sel = document.getElementById('queue-saved-select');
-  sel.innerHTML = '';
-  if (savedMessages.length === 0) {
-    const opt = document.createElement('option');
-    opt.textContent = '(no saved messages)';
-    opt.disabled = true;
-    sel.appendChild(opt);
-    return;
-  }
-  savedMessages.forEach((entry, i) => {
-    const name = typeof entry === 'string' ? entry.slice(0, 40) : entry.name;
-    const opt = document.createElement('option');
-    opt.value = i;
-    opt.textContent = name;
-    sel.appendChild(opt);
-  });
-}
+
 
 // ═══════════════════════════════════════
 //  WEATHER
@@ -1862,7 +1833,7 @@ function renderSaved() {
     const preview = text.length > 60 ? text.slice(0, 57) + '...' : text;
     const li = document.createElement('li');
     li.className = 'saved-item';
-    li.innerHTML = `<span class="idx">${i + 1}</span><span class="msg" data-idx="${i}" title="${escHtml(text.replace(/\n/g, ' '))}"><strong>${escHtml(name)}</strong> <span style="color:var(--text-dim)">${escHtml(preview.replace(/\n/g, ' '))}</span></span><span class="remove" data-idx="${i}">&times;</span>`;
+    li.innerHTML = `<span class="idx">${i + 1}</span><span class="msg" data-idx="${i}" title="${escHtml(text.replace(/\n/g, ' '))}"><strong>${escHtml(name)}</strong> <span style="color:var(--text-dim)">${escHtml(preview.replace(/\n/g, ' '))}</span></span><button class="btn btn-sm queue-add" data-idx="${i}">Queue</button><span class="remove" data-idx="${i}">&times;</span>`;
     list.appendChild(li);
   });
 }
@@ -2084,7 +2055,6 @@ function importConfig(file) {
       buildBoard();
       renderSaved();
       renderWorldClockCityPicker();
-      updateQueueSavedSelect();
       updateToolbarIndicator('btn-fill', fillColor);
       updateToolbarIndicator('btn-border', borderColor);
       sizeTiles();
@@ -2376,34 +2346,17 @@ document.addEventListener('DOMContentLoaded', () => {
 
   renderWorldClockCityPicker();
 
-  // Queue
-  const queueType = document.getElementById('queue-type');
-  const queueSavedWrap = document.getElementById('queue-saved-wrap');
-
-  queueType.addEventListener('change', () => {
-    const t = queueType.value;
-    queueSavedWrap.style.display = t === 'saved' ? '' : 'none';
-    if (t === 'saved') updateQueueSavedSelect();
+  // Queue — add-to-queue buttons on each tab
+  document.getElementById('btn-clock-queue').addEventListener('click', () => {
+    addToQueue({ type: 'clock' });
+  });
+  document.getElementById('btn-worldclock-queue').addEventListener('click', () => {
+    addToQueue({ type: 'worldclock' });
+  });
+  document.getElementById('btn-weather-queue').addEventListener('click', () => {
+    addToQueue({ type: 'weather' });
   });
 
-  document.getElementById('btn-queue-add').addEventListener('click', () => {
-    const t = queueType.value;
-    if (t === 'clock') {
-      addToQueue({ type: 'clock' });
-    } else if (t === 'worldclock') {
-      addToQueue({ type: 'worldclock' });
-    } else if (t === 'weather') {
-      addToQueue({ type: 'weather' });
-    } else if (t === 'saved') {
-      const sel = document.getElementById('queue-saved-select');
-      const idx = parseInt(sel.value);
-      if (isNaN(idx) || !savedMessages[idx]) return;
-      const entry = savedMessages[idx];
-      const name = typeof entry === 'string' ? entry.slice(0, 40) : entry.name;
-      const text = typeof entry === 'string' ? entry : entry.text;
-      addToQueue({ type: 'saved', name, text, alignH: entry.alignH, alignV: entry.alignV, fillColor: entry.fillColor, borderColor: entry.borderColor });
-    }
-  });
   document.getElementById('queue-list').addEventListener('click', (e) => {
     if (e.target.classList.contains('remove')) {
       removeFromQueue(parseInt(e.target.dataset.idx));
@@ -2544,7 +2497,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Saved messages pane
   document.getElementById('saved-list').addEventListener('click', (e) => {
-    if (e.target.classList.contains('remove')) {
+    if (e.target.classList.contains('queue-add')) {
+      const idx = parseInt(e.target.dataset.idx);
+      const entry = savedMessages[idx];
+      if (!entry) return;
+      const name = typeof entry === 'string' ? entry.slice(0, 40) : entry.name;
+      const text = typeof entry === 'string' ? entry : entry.text;
+      addToQueue({ type: 'saved', name, text, alignH: entry.alignH, alignV: entry.alignV, fillColor: entry.fillColor, borderColor: entry.borderColor });
+    } else if (e.target.classList.contains('remove')) {
       removeSaved(parseInt(e.target.dataset.idx));
     } else if (e.target.closest('.msg')) {
       // Load into text input and switch to Text tab
