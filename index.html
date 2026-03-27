@@ -1529,7 +1529,7 @@ async function showQueueMessage() {
     try { await showWeather(); } finally { _queueBusy = false; }
   } else {
     // text or saved
-    await setBoardText(item.text || '');
+    await setBoardText(item.text || '', item.alignH, item.alignV);
   }
 }
 
@@ -1758,7 +1758,7 @@ function saveMessage(text) {
   if (!text.trim()) return;
   const name = prompt('Name for this message:', text.trim().slice(0, 40));
   if (name === null) return; // cancelled
-  savedMessages.push({ name: name.trim() || 'Untitled', text: text.trim() });
+  savedMessages.push({ name: name.trim() || 'Untitled', text: text.trim(), alignH, alignV });
   persistState();
   renderSaved();
 }
@@ -2334,7 +2334,7 @@ document.addEventListener('DOMContentLoaded', () => {
       const entry = savedMessages[idx];
       const name = typeof entry === 'string' ? entry.slice(0, 40) : entry.name;
       const text = typeof entry === 'string' ? entry : entry.text;
-      addToQueue({ type: 'saved', name, text });
+      addToQueue({ type: 'saved', name, text, alignH: entry.alignH, alignV: entry.alignV });
     }
   });
   document.getElementById('queue-input').addEventListener('keydown', (e) => {
@@ -2481,6 +2481,15 @@ document.addEventListener('DOMContentLoaded', () => {
       const idx = parseInt(msgEl.dataset.idx);
       const entry = savedMessages[idx];
       document.getElementById('text-input').value = typeof entry === 'string' ? entry : entry.text;
+      // Restore saved alignment
+      if (entry.alignH) {
+        alignH = entry.alignH;
+        document.querySelectorAll('#align-h .align-btn').forEach(b => b.classList.toggle('active', b.dataset.val === alignH));
+      }
+      if (entry.alignV) {
+        alignV = entry.alignV;
+        document.querySelectorAll('#align-v .align-btn').forEach(b => b.classList.toggle('active', b.dataset.val === alignV));
+      }
       document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
       document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
       document.querySelector('.tab[data-tab="text"]').classList.add('active');
