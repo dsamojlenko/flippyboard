@@ -1,0 +1,14 @@
+{
+  "name": "flippyboard",
+  "version": "1.0.0",
+  "description": "Split-flap display board with web-based management",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "better-sqlite3": "^11.0.0",
+    "express": "^4.21.0",
+    "ws": "^8.18.0"
+  }
+}
