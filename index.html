@@ -1474,10 +1474,53 @@ function persistState() {
   try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); } catch {}
 }
 
+const WORLD_CITIES = [
+  { city: 'Tokyo, Japan', lat: 35.6762, lon: 139.6503 },
+  { city: 'London, England', lat: 51.5074, lon: -0.1278 },
+  { city: 'New York, USA', lat: 40.7128, lon: -74.0060 },
+  { city: 'Paris, France', lat: 48.8566, lon: 2.3522 },
+  { city: 'Sydney, Australia', lat: -33.8688, lon: 151.2093 },
+  { city: 'Dubai, UAE', lat: 25.2048, lon: 55.2708 },
+  { city: 'Singapore', lat: 1.3521, lon: 103.8198 },
+  { city: 'Rome, Italy', lat: 41.9028, lon: 12.4964 },
+  { city: 'Cairo, Egypt', lat: 30.0444, lon: 31.2357 },
+  { city: 'Mumbai, India', lat: 19.0760, lon: 72.8777 },
+  { city: 'Toronto, Canada', lat: 43.6532, lon: -79.3832 },
+  { city: 'Berlin, Germany', lat: 52.5200, lon: 13.4050 },
+  { city: 'São Paulo, Brazil', lat: -23.5505, lon: -46.6333 },
+  { city: 'Mexico City, Mexico', lat: 19.4326, lon: -99.1332 },
+  { city: 'Seoul, South Korea', lat: 37.5665, lon: 126.9780 },
+  { city: 'Istanbul, Turkey', lat: 41.0082, lon: 28.9784 },
+  { city: 'Bangkok, Thailand', lat: 13.7563, lon: 100.5018 },
+  { city: 'Buenos Aires, Argentina', lat: -34.6037, lon: -58.3816 },
+  { city: 'Nairobi, Kenya', lat: -1.2921, lon: 36.8219 },
+  { city: 'Reykjavik, Iceland', lat: 64.1466, lon: -21.9426 },
+];
+
+function loadDefaults() {
+  const city = WORLD_CITIES[Math.floor(Math.random() * WORLD_CITIES.length)];
+  const defaults = {
+    rows: 6, cols: 22, alignH: 'center', alignV: 'middle',
+    soundEnabled: true, is24h: false, fullFlip: true,
+    queue: [
+      { type: 'saved', name: 'Welcome to\nFlippy Board', text: 'Welcome to\nFlippy Board' },
+      { type: 'clock' },
+      { type: 'weather' },
+    ],
+    queueIntervalSec: 12,
+    savedMessages: [
+      { name: 'Welcome to\nFlippy Board', text: 'Welcome to\nFlippy Board' },
+    ],
+    weatherLat: city.lat, weatherLon: city.lon, weatherCity: city.city,
+    weatherUnit: 'F', weatherAutoRefresh: false, weatherRefreshMin: 15,
+  };
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(defaults));
+}
+
 function loadState() {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
-    if (!raw) return;
+    if (!raw) return false;
     const s = JSON.parse(raw);
 
     if (s.rows) { rows = s.rows; document.getElementById('cfg-rows').value = rows; }
@@ -1553,7 +1596,9 @@ function loadState() {
     if (weatherLat != null && weatherLon != null) {
       weatherStatus('Location: ' + (weatherCity || weatherLat.toFixed(2) + ', ' + weatherLon.toFixed(2)));
     }
+    return true;
   } catch {}
+  return false;
 }
 
 function exportConfig() {
@@ -1619,7 +1664,11 @@ window.addEventListener('message', (e) => {
 // ═══════════════════════════════════════
 document.addEventListener('DOMContentLoaded', () => {
   // Load persisted state before building board (rows/cols may change)
-  loadState();
+  const hadSavedState = loadState();
+  if (!hadSavedState) {
+    loadDefaults();
+    loadState();
+  }
   buildBoard();
   renderSaved();
 
@@ -2018,9 +2067,13 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 
-  // Welcome message after a brief delay
+  // On fresh load, auto-start the queue; otherwise show a welcome message
   setTimeout(() => {
-    setBoardText('FLIPPY BOARD\nREADY');
+    if (!hadSavedState && queue.length > 0) {
+      startQueue();
+    } else {
+      setBoardText('FLIPPY BOARD\nREADY');
+    }
   }, 300);
 });
 </script>
