@@ -886,6 +886,7 @@ class Tile {
     this.currentChar = ' ';
     this.flipping = false;
     this._aborted = false;
+    this._flipGen = 0;
 
     this.upper = this._half('upper');
     this.lower = this._half('lower');
@@ -936,9 +937,11 @@ class Tile {
 
   abort() {
     this._aborted = true;
+    this._flipGen++;
   }
 
   forceReset() {
+    this._flipGen++;
     this.flapTop.el.classList.remove('flip');
     this.flapBottom.el.classList.remove('flip');
     this.flapTop.el.style.background = '';
@@ -986,6 +989,7 @@ class Tile {
 
   _flipOnce(newChar) {
     return new Promise(resolve => {
+      const gen = this._flipGen;
       const oldChar = this.currentChar;
       const oldColor = COLOR_TILES[oldChar];
       const newColor = COLOR_TILES[newChar];
@@ -1027,6 +1031,8 @@ class Tile {
         p1Done = true;
         clearTimeout(p1Timer);
         this.flapTop.el.removeEventListener('animationend', onP1);
+        // Stale animation — just resolve without side effects
+        if (this._flipGen !== gen) { resolve(); return; }
         this.flapTop.el.classList.remove('flip');
         this.flapTop.el.style.background = '';
         playClick();
@@ -1041,6 +1047,8 @@ class Tile {
           p2Done = true;
           clearTimeout(p2Timer);
           this.flapBottom.el.removeEventListener('animationend', onP2);
+          // Stale animation — just resolve without side effects
+          if (this._flipGen !== gen) { resolve(); return; }
           this.flapBottom.el.classList.remove('flip');
           this.flapBottom.el.style.background = '';
           this._display(newChar);
