@@ -374,17 +374,23 @@ label {
 .align-group .align-btn.active + .align-btn { border-left-color: var(--accent-dim); }
 .align-group .align-btn svg { width: 14px; height: 14px; fill: currentColor; display: block; }
 
+/* ── Text Options Grid ── */
+.text-options {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px 20px;
+  margin-top: 10px;
+}
+
 .align-controls {
   display: flex;
   gap: 16px;
   align-items: center;
-  margin-top: 10px;
 }
 .align-controls label { margin: 0; }
 
 /* ── Color Palette ── */
 .color-palette {
-  margin-top: 10px;
 }
 .color-swatches {
   display: flex;
@@ -498,6 +504,7 @@ label {
   .board-frame { padding: 10px; }
   .tab { padding: 8px 12px; font-size: 10px; }
   .tab-content { padding: 14px; }
+  .text-options { grid-template-columns: 1fr; }
 }
 </style>
 </head>
@@ -537,43 +544,45 @@ label {
     <div class="tab-pane active" id="pane-text">
       <label>Message <span style="color:var(--text-dim);text-transform:none;font-size:10px;letter-spacing:0">&mdash; use Enter for new lines, Cmd+Enter to send</span></label>
       <textarea id="text-input" placeholder="Type your message..." spellcheck="false"></textarea>
-      <div class="color-palette">
-        <label>Color tiles <span style="color:var(--text-dim);text-transform:none;font-size:10px;letter-spacing:0">&mdash; click to insert at cursor</span></label>
-        <div class="color-swatches" id="color-swatches"></div>
-      </div>
-      <div class="align-controls">
-        <label>Horizontal</label>
-        <div class="align-group" id="align-h">
-          <button class="align-btn active" data-val="left" title="Left">
-            <svg viewBox="0 0 24 24"><path d="M15 15H3v2h12v-2zm0-8H3v2h12V7zM3 13h18v-2H3v2zM3 21h18v-2H3v2zM3 3v2h18V3H3z"/></svg>
-          </button>
-          <button class="align-btn" data-val="center" title="Center">
-            <svg viewBox="0 0 24 24"><path d="M7 15v2h10v-2H7zm-4 6h18v-2H3v2zm0-8h18v-2H3v2zm4-6v2h10V7H7zM3 3v2h18V3H3z"/></svg>
-          </button>
-          <button class="align-btn" data-val="right" title="Right">
-            <svg viewBox="0 0 24 24"><path d="M3 21h18v-2H3v2zm6-4h12v-2H9v2zm-6-4h18v-2H3v2zm6-4h12V7H9v2zM3 3v2h18V3H3z"/></svg>
-          </button>
+      <div class="text-options">
+        <div class="color-palette">
+          <label>Color tiles <span style="color:var(--text-dim);text-transform:none;font-size:10px;letter-spacing:0">&mdash; click to insert</span></label>
+          <div class="color-swatches" id="color-swatches"></div>
         </div>
-        <label style="margin-left:8px">Vertical</label>
-        <div class="align-group" id="align-v">
-          <button class="align-btn" data-val="top" title="Top">
-            <svg viewBox="0 0 24 24"><path d="M8 11h3v10h2V11h3l-4-4-4 4zM4 3v2h16V3H4z"/></svg>
-          </button>
-          <button class="align-btn active" data-val="middle" title="Middle">
-            <svg viewBox="0 0 24 24"><path d="M8 19h3v4h2v-4h3l-4-4-4 4zm8-14h-3V1h-2v4H8l4 4 4-4zM4 11v2h16v-2H4z"/></svg>
-          </button>
-          <button class="align-btn" data-val="bottom" title="Bottom">
-            <svg viewBox="0 0 24 24"><path d="M16 13h-3V3h-2v10H8l4 4 4-4zM4 19v2h16v-2H4z"/></svg>
-          </button>
+        <div class="align-controls">
+          <label>Horizontal</label>
+          <div class="align-group" id="align-h">
+            <button class="align-btn active" data-val="left" title="Left">
+              <svg viewBox="0 0 24 24"><path d="M15 15H3v2h12v-2zm0-8H3v2h12V7zM3 13h18v-2H3v2zM3 21h18v-2H3v2zM3 3v2h18V3H3z"/></svg>
+            </button>
+            <button class="align-btn" data-val="center" title="Center">
+              <svg viewBox="0 0 24 24"><path d="M7 15v2h10v-2H7zm-4 6h18v-2H3v2zm0-8h18v-2H3v2zm4-6v2h10V7H7zM3 3v2h18V3H3z"/></svg>
+            </button>
+            <button class="align-btn" data-val="right" title="Right">
+              <svg viewBox="0 0 24 24"><path d="M3 21h18v-2H3v2zm6-4h12v-2H9v2zm-6-4h18v-2H3v2zm6-4h12V7H9v2zM3 3v2h18V3H3z"/></svg>
+            </button>
+          </div>
+          <label style="margin-left:8px">Vertical</label>
+          <div class="align-group" id="align-v">
+            <button class="align-btn" data-val="top" title="Top">
+              <svg viewBox="0 0 24 24"><path d="M8 11h3v10h2V11h3l-4-4-4 4zM4 3v2h16V3H4z"/></svg>
+            </button>
+            <button class="align-btn active" data-val="middle" title="Middle">
+              <svg viewBox="0 0 24 24"><path d="M8 19h3v4h2v-4h3l-4-4-4 4zm8-14h-3V1h-2v4H8l4 4 4-4zM4 11v2h16v-2H4z"/></svg>
+            </button>
+            <button class="align-btn" data-val="bottom" title="Bottom">
+              <svg viewBox="0 0 24 24"><path d="M16 13h-3V3h-2v10H8l4 4 4-4zM4 19v2h16v-2H4z"/></svg>
+            </button>
+          </div>
         </div>
-      </div>
-      <div class="color-palette" style="margin-top:10px">
-        <label>Apply fill <span style="color:var(--text-dim);text-transform:none;font-size:10px;letter-spacing:0">&mdash; fill empty space with a color</span></label>
-        <div class="color-swatches" id="fill-swatches" style="margin-top:6px"></div>
-      </div>
-      <div class="color-palette" style="margin-top:10px">
-        <label>Apply border <span style="color:var(--text-dim);text-transform:none;font-size:10px;letter-spacing:0">&mdash; wrap message with a colored border</span></label>
-        <div class="color-swatches" id="border-swatches" style="margin-top:6px"></div>
+        <div class="color-palette">
+          <label>Fill <span style="color:var(--text-dim);text-transform:none;font-size:10px;letter-spacing:0">&mdash; empty space</span></label>
+          <div class="color-swatches" id="fill-swatches"></div>
+        </div>
+        <div class="color-palette">
+          <label>Border <span style="color:var(--text-dim);text-transform:none;font-size:10px;letter-spacing:0">&mdash; colored border</span></label>
+          <div class="color-swatches" id="border-swatches"></div>
+        </div>
       </div>
       <div class="inline-row">
         <button class="btn" id="btn-send">Send</button>
