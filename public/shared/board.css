@@ -1,0 +1,132 @@
+/* ── Board Frame ── */
+.board-frame {
+  background: var(--bezel);
+  border: 1px solid var(--bezel-edge);
+  border-radius: 10px;
+  padding: 18px;
+  box-shadow:
+    0 2px 8px rgba(0,0,0,0.5),
+    0 12px 40px rgba(0,0,0,0.4),
+    inset 0 1px 0 rgba(255,255,255,0.04);
+  position: relative;
+  overflow: hidden;
+}
+
+.board-frame::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 10px;
+  background: linear-gradient(180deg, rgba(255,255,255,0.015) 0%, transparent 40%);
+  pointer-events: none;
+}
+
+.board-inner {
+  background: var(--board-bg);
+  border-radius: 5px;
+  padding: 10px;
+  box-shadow: inset 0 2px 6px rgba(0,0,0,0.5);
+}
+
+.board {
+  display: grid;
+  gap: var(--tile-gap);
+  justify-content: center;
+}
+
+/* ── Tile ── */
+.tile {
+  position: relative;
+  width: var(--tw);
+  height: var(--th);
+  perspective: 250px;
+  font-family: var(--font-flap);
+  font-weight: 700;
+}
+
+.half, .flap {
+  position: absolute;
+  left: 0;
+  width: 100%;
+  height: 50%;
+  overflow: hidden;
+  backface-visibility: hidden;
+}
+
+.half.upper {
+  top: 0;
+  background: var(--tile-bg-upper);
+  border-radius: var(--tile-radius) var(--tile-radius) 0 0;
+  border-bottom: 1px solid var(--split-line);
+}
+
+.half.lower {
+  top: 50%;
+  background: var(--tile-bg-lower);
+  border-radius: 0 0 var(--tile-radius) var(--tile-radius);
+  border-top: 1px solid rgba(255,255,255,0.02);
+}
+
+.half .ch, .flap .ch {
+  position: absolute;
+  left: 0;
+  width: 100%;
+  height: 200%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: calc(var(--th) * 0.68);
+  color: var(--char-color);
+  text-shadow: 0 0 8px var(--char-glow);
+  user-select: none;
+  line-height: 1;
+}
+
+.half.upper .ch { top: 0; }
+.half.lower .ch { bottom: 0; }
+
+/* ── Flaps (animated) ── */
+.flap {
+  display: none;
+  will-change: transform;
+  pointer-events: none;
+  z-index: 2;
+}
+
+.flap-top {
+  top: 0;
+  transform-origin: center bottom;
+  background: var(--tile-bg-upper);
+  border-radius: var(--tile-radius) var(--tile-radius) 0 0;
+  border-bottom: 1px solid var(--split-line);
+}
+
+.flap-bottom {
+  top: 50%;
+  transform-origin: center top;
+  background: var(--tile-bg-lower);
+  border-radius: 0 0 var(--tile-radius) var(--tile-radius);
+}
+
+.flap-top .ch { top: 0; }
+.flap-bottom .ch { bottom: 0; }
+
+.flap-top.flip {
+  display: block;
+  animation: flap-out var(--flip-speed) ease-in forwards;
+}
+
+.flap-bottom.flip {
+  display: block;
+  animation: flap-in var(--flip-speed) ease-out forwards;
+}
+
+@keyframes flap-out {
+  0%   { transform: rotateX(0deg); }
+  100% { transform: rotateX(90deg); }
+}
+
+@keyframes flap-in {
+  0%   { transform: rotateX(-90deg); }
+  100% { transform: rotateX(0deg); box-shadow: 0 2px 4px rgba(0,0,0,0.3); }
+}
