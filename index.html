@@ -544,9 +544,10 @@ label {
 /* ── Fullscreen overrides ── */
 :fullscreen body, :-webkit-full-screen body {
   justify-content: center;
+  padding: 0;
 }
 :fullscreen .panel, :-webkit-full-screen .panel,
-:fullscreen .toolbar-title, :-webkit-full-screen .toolbar-title { display: none; }
+:fullscreen .toolbar, :-webkit-full-screen .toolbar { display: none; }
 
 /* ── Responsive ── */
 @media (max-width: 640px) {
@@ -1141,8 +1142,13 @@ function buildBoard() {
 }
 
 function sizeTiles() {
-  const maxW = Math.min(window.innerWidth - 80, 1160);
-  const maxH = window.innerHeight * 0.55;
+  const isFullscreen = !!document.fullscreenElement;
+  const maxW = isFullscreen
+    ? window.innerWidth - 60
+    : Math.min(window.innerWidth - 80, 1160);
+  const maxH = isFullscreen
+    ? window.innerHeight - 40
+    : window.innerHeight * 0.55;
 
   const gapTotal = (cols - 1) * 3;
   let tw = Math.floor((maxW - gapTotal) / cols);
@@ -2601,6 +2607,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Resize handler
   window.addEventListener('resize', () => sizeTiles());
+  document.addEventListener('fullscreenchange', () => sizeTiles());
 
   // Handle tab visibility changes to prevent stuck animations and interval buildup
   let queueWasPaused = false;
