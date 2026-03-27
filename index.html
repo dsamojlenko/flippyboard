@@ -92,6 +92,13 @@ body {
 .toolbar-btn:hover { background: rgba(255,255,255,0.08); color: var(--text); border-color: #555; }
 .toolbar-btn.active { color: var(--accent); border-color: var(--accent-dim); background: rgba(212,168,67,0.08); }
 .toolbar-btn svg { width: 14px; height: 14px; fill: currentColor; }
+.toolbar-indicator {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  display: inline-block;
+  border: 1px solid rgba(255,255,255,0.3);
+}
 
 /* ── Board Frame ── */
 .board-frame {
@@ -374,28 +381,48 @@ label {
 .align-group .align-btn.active + .align-btn { border-left-color: var(--accent-dim); }
 .align-group .align-btn svg { width: 14px; height: 14px; fill: currentColor; display: block; }
 
-/* ── Text Options Grid ── */
-.text-options {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 10px 20px;
-  margin-top: 10px;
+/* ── Text Toolbar ── */
+.text-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 8px;
+  flex-wrap: wrap;
 }
 
-.align-controls {
-  display: flex;
-  gap: 16px;
-  align-items: center;
+.toolbar-sep {
+  width: 1px;
+  height: 20px;
+  background: var(--panel-border);
+  margin: 0 2px;
 }
-.align-controls label { margin: 0; }
+
+.toolbar-dropdown {
+  position: relative;
+}
+
+.toolbar-dropdown-menu {
+  display: none;
+  position: absolute;
+  top: 100%;
+  left: 0;
+  margin-top: 4px;
+  background: var(--panel);
+  border: 1px solid var(--panel-border);
+  border-radius: 6px;
+  padding: 8px;
+  z-index: 100;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+}
+
+.toolbar-dropdown.open .toolbar-dropdown-menu {
+  display: block;
+}
 
 /* ── Color Palette ── */
-.color-palette {
-}
 .color-swatches {
   display: flex;
   gap: 6px;
-  margin-top: 6px;
 }
 .color-swatch {
   width: 28px;
@@ -570,47 +597,66 @@ label {
     <!-- TEXT -->
     <div class="tab-pane active" id="pane-text">
       <label>Message <span style="color:var(--text-dim);text-transform:none;font-size:10px;letter-spacing:0">&mdash; use Enter for new lines, Cmd+Enter to send</span></label>
-      <textarea id="text-input" placeholder="Type your message..." spellcheck="false"></textarea>
-      <div class="text-options">
-        <div class="color-palette">
-          <label>Color tiles <span style="color:var(--text-dim);text-transform:none;font-size:10px;letter-spacing:0">&mdash; click to insert</span></label>
-          <div class="color-swatches" id="color-swatches"></div>
+      <div class="text-toolbar">
+        <div class="align-group" id="align-h">
+          <button class="align-btn active" data-val="left" title="Align left">
+            <svg viewBox="0 0 24 24"><path d="M15 15H3v2h12v-2zm0-8H3v2h12V7zM3 13h18v-2H3v2zM3 21h18v-2H3v2zM3 3v2h18V3H3z"/></svg>
+          </button>
+          <button class="align-btn" data-val="center" title="Align centre">
+            <svg viewBox="0 0 24 24"><path d="M7 15v2h10v-2H7zm-4 6h18v-2H3v2zm0-8h18v-2H3v2zm4-6v2h10V7H7zM3 3v2h18V3H3z"/></svg>
+          </button>
+          <button class="align-btn" data-val="right" title="Align right">
+            <svg viewBox="0 0 24 24"><path d="M3 21h18v-2H3v2zm6-4h12v-2H9v2zm-6-4h18v-2H3v2zm6-4h12V7H9v2zM3 3v2h18V3H3z"/></svg>
+          </button>
         </div>
-        <div class="align-controls">
-          <label>Horizontal</label>
-          <div class="align-group" id="align-h">
-            <button class="align-btn active" data-val="left" title="Left">
-              <svg viewBox="0 0 24 24"><path d="M15 15H3v2h12v-2zm0-8H3v2h12V7zM3 13h18v-2H3v2zM3 21h18v-2H3v2zM3 3v2h18V3H3z"/></svg>
-            </button>
-            <button class="align-btn" data-val="center" title="Center">
-              <svg viewBox="0 0 24 24"><path d="M7 15v2h10v-2H7zm-4 6h18v-2H3v2zm0-8h18v-2H3v2zm4-6v2h10V7H7zM3 3v2h18V3H3z"/></svg>
-            </button>
-            <button class="align-btn" data-val="right" title="Right">
-              <svg viewBox="0 0 24 24"><path d="M3 21h18v-2H3v2zm6-4h12v-2H9v2zm-6-4h18v-2H3v2zm6-4h12V7H9v2zM3 3v2h18V3H3z"/></svg>
-            </button>
+
+        <div class="toolbar-sep"></div>
+
+        <div class="align-group" id="align-v">
+          <button class="align-btn" data-val="top" title="Align top">
+            <svg viewBox="0 0 24 24"><path d="M8 11h3v10h2V11h3l-4-4-4 4zM4 3v2h16V3H4z"/></svg>
+          </button>
+          <button class="align-btn active" data-val="middle" title="Align middle">
+            <svg viewBox="0 0 24 24"><path d="M8 19h3v4h2v-4h3l-4-4-4 4zm8-14h-3V1h-2v4H8l4 4 4-4zM4 11v2h16v-2H4z"/></svg>
+          </button>
+          <button class="align-btn" data-val="bottom" title="Align bottom">
+            <svg viewBox="0 0 24 24"><path d="M16 13h-3V3h-2v10H8l4 4 4-4zM4 19v2h16v-2H4z"/></svg>
+          </button>
+        </div>
+
+        <div class="toolbar-sep"></div>
+
+        <div class="toolbar-dropdown">
+          <button class="toolbar-btn" id="btn-colour" title="Insert colour tile">
+            <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor"><path d="M12 3c-4.97 0-9 4.03-9 9s4.03 9 9 9c.83 0 1.5-.67 1.5-1.5 0-.39-.15-.74-.39-1.01-.23-.26-.38-.61-.38-1 0-.83.67-1.5 1.5-1.5H16c2.76 0 5-2.24 5-5 0-4.42-4.03-8-9-8zm-5.5 9c-.83 0-1.5-.67-1.5-1.5S5.67 9 6.5 9 8 9.67 8 10.5 7.33 12 6.5 12zm3-4C8.67 8 8 7.33 8 6.5S8.67 5 9.5 5s1.5.67 1.5 1.5S10.33 8 9.5 8zm5 0c-.83 0-1.5-.67-1.5-1.5S13.67 5 14.5 5s1.5.67 1.5 1.5S15.33 8 14.5 8zm3 4c-.83 0-1.5-.67-1.5-1.5S16.67 9 17.5 9s1.5.67 1.5 1.5-.67 1.5-1.5 1.5z"/></svg>
+            Colour
+          </button>
+          <div class="toolbar-dropdown-menu" id="menu-colour">
+            <div class="color-swatches" id="color-swatches"></div>
           </div>
-          <label style="margin-left:8px">Vertical</label>
-          <div class="align-group" id="align-v">
-            <button class="align-btn" data-val="top" title="Top">
-              <svg viewBox="0 0 24 24"><path d="M8 11h3v10h2V11h3l-4-4-4 4zM4 3v2h16V3H4z"/></svg>
-            </button>
-            <button class="align-btn active" data-val="middle" title="Middle">
-              <svg viewBox="0 0 24 24"><path d="M8 19h3v4h2v-4h3l-4-4-4 4zm8-14h-3V1h-2v4H8l4 4 4-4zM4 11v2h16v-2H4z"/></svg>
-            </button>
-            <button class="align-btn" data-val="bottom" title="Bottom">
-              <svg viewBox="0 0 24 24"><path d="M16 13h-3V3h-2v10H8l4 4 4-4zM4 19v2h16v-2H4z"/></svg>
-            </button>
+        </div>
+
+        <div class="toolbar-dropdown">
+          <button class="toolbar-btn" id="btn-fill" title="Fill empty space">
+            <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor"><path d="M16.56 8.94L7.62 0 6.21 1.42l2.38 2.38-5.15 5.15c-.59.59-.59 1.54 0 2.12l5.5 5.5c.29.29.68.44 1.06.44s.77-.15 1.06-.44l5.5-5.5c.59-.58.59-1.53 0-2.12zM5.21 10L10 5.21 14.79 10H5.21zM19 11.5s-2 2.17-2 3.5c0 1.1.9 2 2 2s2-.9 2-2c0-1.33-2-3.5-2-3.5z"/></svg>
+            Fill
+          </button>
+          <div class="toolbar-dropdown-menu" id="menu-fill">
+            <div class="color-swatches" id="fill-swatches"></div>
           </div>
         </div>
-        <div class="color-palette">
-          <label>Fill <span style="color:var(--text-dim);text-transform:none;font-size:10px;letter-spacing:0">&mdash; empty space</span></label>
-          <div class="color-swatches" id="fill-swatches"></div>
-        </div>
-        <div class="color-palette">
-          <label>Border <span style="color:var(--text-dim);text-transform:none;font-size:10px;letter-spacing:0">&mdash; colored border</span></label>
-          <div class="color-swatches" id="border-swatches"></div>
+
+        <div class="toolbar-dropdown">
+          <button class="toolbar-btn" id="btn-border" title="Add coloured border">
+            <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor"><path d="M3 3v18h18V3H3zm16 16H5V5h14v14zm-2-2H7v-2h10v2zm0-4H7v-2h10v2zm0-4H7V7h10v2z"/></svg>
+            Border
+          </button>
+          <div class="toolbar-dropdown-menu" id="menu-border">
+            <div class="color-swatches" id="border-swatches"></div>
+          </div>
         </div>
       </div>
+      <textarea id="text-input" placeholder="Type your message..." spellcheck="false"></textarea>
       <div class="inline-row">
         <button class="btn" id="btn-send">Send</button>
         <button class="btn btn-sm" id="btn-save">Save Message</button>
@@ -764,7 +810,7 @@ ch.postMessage({ <span class="str">rows</span>: [<span class="str">'LINE ONE'</s
 <span class="cmt">// Clear the board:</span>
 ch.postMessage({ <span class="str">clear</span>: <span class="kw">true</span> });
 
-<span class="cmt">// Color tiles — use {R} {O} {Y} {G} {B} {V} {W}:</span>
+<span class="cmt">// Colour tiles — use {R} {O} {Y} {G} {B} {V} {W}:</span>
 ch.postMessage({ <span class="str">text</span>: <span class="str">'{R}{R}{R} ALERT {R}{R}{R}'</span> });</div>
       </div>
       <div class="api-section">
@@ -1141,6 +1187,8 @@ function setBoard(lines) {
 let alignH = 'left';
 let alignV = 'middle';
 let fullFlip = false;
+let fillColor = null;   // e.g. 'R', 'O', ... or null for none
+let borderColor = null;
 
 // Parse color codes like {R} {G} {B} etc. into PUA characters
 function parseColorCodes(text) {
@@ -1160,39 +1208,74 @@ function expandJustify(text, width) {
   }).join('\n');
 }
 
-function setBoardText(text, hAlign, vAlign) {
-  hAlign = hAlign || alignH;
-  vAlign = vAlign || alignV;
-
+function layoutLines(text, numCols, numRows, hAlign, vAlign) {
   text = parseColorCodes(text);
-  text = expandJustify(text, cols);
-  const lines = wordWrap(text.toUpperCase(), cols);
+  text = expandJustify(text, numCols);
+  const lines = wordWrap(text.toUpperCase(), numCols);
 
-  // Horizontal alignment — pad each line
   const aligned = lines.map(line => {
-    if (line.length >= cols) return line.slice(0, cols);
-    const gap = cols - line.length;
+    if (line.length >= numCols) return line.slice(0, numCols);
+    const gap = numCols - line.length;
     if (hAlign === 'center') {
       const left = Math.floor(gap / 2);
       return ' '.repeat(left) + line + ' '.repeat(gap - left);
     } else if (hAlign === 'right') {
       return ' '.repeat(gap) + line;
     }
-    return line; // left — setBoard pads with spaces on the right
+    return line + ' '.repeat(gap);
   });
 
-  // Vertical alignment
   let padTop = 0;
-  if (aligned.length < rows) {
-    if (vAlign === 'middle') padTop = Math.floor((rows - aligned.length) / 2);
-    else if (vAlign === 'bottom') padTop = rows - aligned.length;
-    // top: padTop stays 0
+  if (aligned.length < numRows) {
+    if (vAlign === 'middle') padTop = Math.floor((numRows - aligned.length) / 2);
+    else if (vAlign === 'bottom') padTop = numRows - aligned.length;
   }
 
-  const padded = [];
-  for (let i = 0; i < rows; i++) {
-    padded.push(i >= padTop && i < padTop + aligned.length ? aligned[i - padTop] : '');
+  const result = [];
+  for (let i = 0; i < numRows; i++) {
+    let line = i >= padTop && i < padTop + aligned.length ? aligned[i - padTop] : '';
+    if (line.length < numCols) line += ' '.repeat(numCols - line.length);
+    result.push(line);
   }
+  return result;
+}
+
+function setBoardText(text, hAlign, vAlign, fill, border) {
+  hAlign = hAlign || alignH;
+  vAlign = vAlign || alignV;
+  fill = fill !== undefined ? fill : fillColor;
+  border = border !== undefined ? border : borderColor;
+
+  let padded;
+
+  function applyFillToLines(lines, width) {
+    const fillChar = CODE_TO_COLOR[fill];
+    return lines.map(line => {
+      const content = line.replace(/\s+$/, '');
+      const contentStart = content.search(/\S/);
+      if (contentStart === -1) return fillChar.repeat(line.length > 0 ? line.length : width);
+      const leading = fillChar.repeat(contentStart);
+      const trailing = fillChar.repeat(Math.max(0, line.length - content.length));
+      return leading + content.slice(contentStart) + trailing;
+    });
+  }
+
+  if (border) {
+    const borderChar = CODE_TO_COLOR[border];
+    const innerCols = cols - 2;
+    const innerRows = rows - 2;
+    let innerLines = layoutLines(text, innerCols, innerRows, hAlign, vAlign);
+    // Apply fill to inner lines before wrapping with border
+    if (fill) innerLines = applyFillToLines(innerLines, innerCols);
+    padded = [];
+    padded.push(borderChar.repeat(cols));
+    for (const line of innerLines) padded.push(borderChar + line + borderChar);
+    padded.push(borderChar.repeat(cols));
+  } else {
+    padded = layoutLines(text, cols, rows, hAlign, vAlign);
+    if (fill) padded = applyFillToLines(padded, cols);
+  }
+
   return setBoard(padded);
 }
 
@@ -1529,7 +1612,7 @@ async function showQueueMessage() {
     try { await showWeather(); } finally { _queueBusy = false; }
   } else {
     // text or saved
-    await setBoardText(item.text || '', item.alignH, item.alignV);
+    await setBoardText(item.text || '', item.alignH, item.alignV, item.fillColor || null, item.borderColor || null);
   }
 }
 
@@ -1758,7 +1841,7 @@ function saveMessage(text) {
   if (!text.trim()) return;
   const name = prompt('Name for this message:', text.trim().slice(0, 40));
   if (name === null) return; // cancelled
-  savedMessages.push({ name: name.trim() || 'Untitled', text: text.trim(), alignH, alignV });
+  savedMessages.push({ name: name.trim() || 'Untitled', text: text.trim(), alignH, alignV, fillColor, borderColor });
   persistState();
   renderSaved();
 }
@@ -1795,7 +1878,7 @@ const STORAGE_KEY = 'splitflap_state';
 
 function persistState() {
   const state = {
-    rows, cols, alignH, alignV, soundEnabled, is24h, fullFlip,
+    rows, cols, alignH, alignV, fillColor, borderColor, soundEnabled, is24h, fullFlip,
     clockTimezone,
     queueDwellSec: parseInt(document.getElementById('queue-dwell').value) || 8,
     queue,
@@ -1881,6 +1964,11 @@ function loadState() {
         b.classList.toggle('active', b.dataset.val === alignV);
       });
     }
+
+    if (s.fillColor) fillColor = s.fillColor;
+    else fillColor = null;
+    if (s.borderColor) borderColor = s.borderColor;
+    else borderColor = null;
 
     if (typeof s.soundEnabled === 'boolean') {
       soundEnabled = s.soundEnabled;
@@ -2001,6 +2089,8 @@ function importConfig(file) {
       renderSaved();
       renderWorldClockCityPicker();
       updateQueueSavedSelect();
+      updateToolbarIndicator('btn-fill', fillColor);
+      updateToolbarIndicator('btn-border', borderColor);
       sizeTiles();
     } catch {
       alert('Failed to parse config file.');
@@ -2088,7 +2178,8 @@ document.addEventListener('DOMContentLoaded', () => {
     swatch.style.background = info.upper;
     swatch.title = info.name + ' {' + info.code + '}';
     swatch.dataset.code = '{' + info.code + '}';
-    swatch.addEventListener('click', () => {
+    swatch.addEventListener('click', (e) => {
+      e.stopPropagation();
       const ta = document.getElementById('text-input');
       const start = ta.selectionStart;
       const end = ta.selectionEnd;
@@ -2100,69 +2191,33 @@ document.addEventListener('DOMContentLoaded', () => {
     swatchContainer.appendChild(swatch);
   }
 
-  // Fill & Border action swatches
-  function layoutTextForBoard(text, numCols, numRows, hAlign, vAlign) {
-    text = parseColorCodes(text);
-    text = expandJustify(text, numCols);
-    const lines = wordWrap(text.toUpperCase(), numCols);
-    const aligned = lines.map(line => {
-      if (line.length >= numCols) return line.slice(0, numCols);
-      const gap = numCols - line.length;
-      if (hAlign === 'center') {
-        const left = Math.floor(gap / 2);
-        return ' '.repeat(left) + line + ' '.repeat(gap - left);
-      } else if (hAlign === 'right') {
-        return ' '.repeat(gap) + line;
-      }
-      return line + ' '.repeat(gap);
-    });
-    let padTop = 0;
-    if (aligned.length < numRows) {
-      if (vAlign === 'middle') padTop = Math.floor((numRows - aligned.length) / 2);
-      else if (vAlign === 'bottom') padTop = numRows - aligned.length;
+  // Fill & Border — non-destructive setters
+  function updateToolbarIndicator(btnId, colorCode) {
+    const btn = document.getElementById(btnId);
+    let dot = btn.querySelector('.toolbar-indicator');
+    if (!colorCode) {
+      if (dot) dot.remove();
+      return;
     }
-    const result = [];
-    for (let i = 0; i < numRows; i++) {
-      let line = i >= padTop && i < padTop + aligned.length ? aligned[i - padTop] : '';
-      if (line.length < numCols) line += ' '.repeat(numCols - line.length);
-      result.push(line);
+    if (!dot) {
+      dot = document.createElement('span');
+      dot.className = 'toolbar-indicator';
+      btn.appendChild(dot);
     }
-    return result;
-  }
-
-  // Convert PUA chars back to {X} codes for the textarea
-  function puaToColorCodes(text) {
-    let out = '';
-    for (const ch of text) {
-      if (COLOR_TILES[ch]) out += '{' + COLOR_TILES[ch].code + '}';
-      else out += ch;
-    }
-    return out;
+    const ch = CODE_TO_COLOR[colorCode];
+    dot.style.background = COLOR_TILES[ch].upper;
   }
 
   function applyFill(colorCode) {
-    const ta = document.getElementById('text-input');
-    const laid = layoutTextForBoard(ta.value, cols, rows, alignH, alignV);
-    const colorChar = CODE_TO_COLOR[colorCode];
-    const filled = laid.map(line => {
-      let out = '';
-      for (const ch of line) out += ch === ' ' ? colorChar : ch;
-      return out;
-    });
-    ta.value = filled.map(puaToColorCodes).join('\n');
+    fillColor = fillColor === colorCode ? null : colorCode;
+    updateToolbarIndicator('btn-fill', fillColor);
+    persistState();
   }
 
   function applyBorder(colorCode) {
-    const ta = document.getElementById('text-input');
-    const innerCols = cols - 2;
-    const innerRows = rows - 2;
-    const laid = layoutTextForBoard(ta.value, innerCols, innerRows, alignH, alignV);
-    const colorChar = CODE_TO_COLOR[colorCode];
-    const bordered = [];
-    bordered.push(colorChar.repeat(cols));
-    for (const line of laid) bordered.push(colorChar + line + colorChar);
-    bordered.push(colorChar.repeat(cols));
-    ta.value = bordered.map(puaToColorCodes).join('\n');
+    borderColor = borderColor === colorCode ? null : colorCode;
+    updateToolbarIndicator('btn-border', borderColor);
+    persistState();
   }
 
   function buildActionSwatches(containerId, onClick) {
@@ -2172,13 +2227,34 @@ document.addEventListener('DOMContentLoaded', () => {
       swatch.className = 'color-swatch';
       swatch.style.background = info.upper;
       swatch.title = info.name;
-      swatch.addEventListener('click', () => onClick(info.code));
+      swatch.addEventListener('click', () => {
+        onClick(info.code);
+        document.querySelectorAll('.toolbar-dropdown.open').forEach(d => d.classList.remove('open'));
+      });
       container.appendChild(swatch);
     }
   }
 
   buildActionSwatches('fill-swatches', applyFill);
   buildActionSwatches('border-swatches', applyBorder);
+
+  // Restore toolbar indicators for fill/border from persisted state
+  updateToolbarIndicator('btn-fill', fillColor);
+  updateToolbarIndicator('btn-border', borderColor);
+
+  // Toolbar dropdown toggles
+  document.querySelectorAll('.toolbar-dropdown > .toolbar-btn').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const dd = btn.parentElement;
+      const wasOpen = dd.classList.contains('open');
+      document.querySelectorAll('.toolbar-dropdown.open').forEach(d => d.classList.remove('open'));
+      if (!wasOpen) dd.classList.add('open');
+    });
+  });
+  document.addEventListener('click', () => {
+    document.querySelectorAll('.toolbar-dropdown.open').forEach(d => d.classList.remove('open'));
+  });
 
   // Alignment toggles
   function wireAlignGroup(id, setter) {
@@ -2337,7 +2413,7 @@ document.addEventListener('DOMContentLoaded', () => {
       const entry = savedMessages[idx];
       const name = typeof entry === 'string' ? entry.slice(0, 40) : entry.name;
       const text = typeof entry === 'string' ? entry : entry.text;
-      addToQueue({ type: 'saved', name, text, alignH: entry.alignH, alignV: entry.alignV });
+      addToQueue({ type: 'saved', name, text, alignH: entry.alignH, alignV: entry.alignV, fillColor: entry.fillColor, borderColor: entry.borderColor });
     }
   });
   document.getElementById('queue-input').addEventListener('keydown', (e) => {
@@ -2493,6 +2569,11 @@ document.addEventListener('DOMContentLoaded', () => {
         alignV = entry.alignV;
         document.querySelectorAll('#align-v .align-btn').forEach(b => b.classList.toggle('active', b.dataset.val === alignV));
       }
+      // Restore saved fill/border
+      fillColor = entry.fillColor || null;
+      borderColor = entry.borderColor || null;
+      updateToolbarIndicator('btn-fill', fillColor);
+      updateToolbarIndicator('btn-border', borderColor);
       document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
       document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
       document.querySelector('.tab[data-tab="text"]').classList.add('active');
