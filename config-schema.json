@@ -1,0 +1,239 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Flippy Board Configuration",
+  "description": "Export/import schema for Flippy Board settings, saved messages, queue, and data sources.",
+  "type": "object",
+  "required": ["version"],
+  "properties": {
+    "version": {
+      "const": 1,
+      "description": "Schema version number."
+    },
+    "settings": {
+      "type": "object",
+      "description": "Global board settings.",
+      "properties": {
+        "rows": {
+          "type": "integer",
+          "minimum": 1,
+          "default": 6,
+          "description": "Number of tile rows."
+        },
+        "cols": {
+          "type": "integer",
+          "minimum": 1,
+          "default": 22,
+          "description": "Number of tile columns."
+        },
+        "fullFlip": {
+          "type": "boolean",
+          "default": true,
+          "description": "Flip through every intermediate character when transitioning."
+        },
+        "soundEnabled": {
+          "type": "boolean",
+          "default": true,
+          "description": "Play flip sound on tile transitions."
+        }
+      },
+      "additionalProperties": false
+    },
+    "queue": {
+      "type": "object",
+      "description": "Message queue rotation settings and items.",
+      "properties": {
+        "dwellTime": {
+          "type": "number",
+          "minimum": 1,
+          "default": 12,
+          "description": "Seconds to display each item before advancing."
+        },
+        "items": {
+          "type": "array",
+          "description": "Ordered list of queue entries.",
+          "items": {
+            "$ref": "#/$defs/queueItem"
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "saved": {
+      "type": "array",
+      "description": "Saved messages for quick recall.",
+      "items": {
+        "$ref": "#/$defs/savedMessage"
+      }
+    },
+    "clock": {
+      "type": "object",
+      "description": "Clock display settings.",
+      "properties": {
+        "is24h": {
+          "type": "boolean",
+          "default": false,
+          "description": "Use 24-hour time format."
+        },
+        "timezone": {
+          "type": "string",
+          "default": "",
+          "description": "IANA timezone (e.g. \"America/New_York\"). Empty string for local time."
+        }
+      },
+      "additionalProperties": false
+    },
+    "worldClock": {
+      "type": "object",
+      "description": "World clock city selections.",
+      "properties": {
+        "cities": {
+          "type": "array",
+          "description": "Selected built-in city names.",
+          "items": {
+            "type": "string"
+          }
+        },
+        "customCities": {
+          "type": "array",
+          "description": "User-added cities.",
+          "items": {
+            "type": "object",
+            "required": ["name", "tz"],
+            "properties": {
+              "name": {
+                "type": "string",
+                "description": "Display name for the city."
+              },
+              "tz": {
+                "type": "string",
+                "description": "IANA timezone identifier."
+              }
+            },
+            "additionalProperties": false
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "weather": {
+      "type": "object",
+      "description": "Weather display settings.",
+      "properties": {
+        "lat": {
+          "type": "number",
+          "description": "Latitude of the weather location."
+        },
+        "lon": {
+          "type": "number",
+          "description": "Longitude of the weather location."
+        },
+        "city": {
+          "type": "string",
+          "description": "Display name for the weather location."
+        },
+        "unit": {
+          "type": "string",
+          "enum": ["F", "C"],
+          "default": "F",
+          "description": "Temperature unit: Fahrenheit or Celsius."
+        },
+        "autoRefresh": {
+          "type": "boolean",
+          "default": false,
+          "description": "Automatically refresh weather data on an interval."
+        },
+        "refreshMin": {
+          "type": "number",
+          "minimum": 1,
+          "default": 15,
+          "description": "Auto-refresh interval in minutes."
+        }
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false,
+  "$defs": {
+    "boardProperties": {
+      "type": "object",
+      "description": "Common properties for text displayed on the board.",
+      "properties": {
+        "text": {
+          "type": "string",
+          "description": "Board text content. Supports formatting codes: {R} {O} {Y} {G} {B} {V} {W} (colour tiles), {<>} (justify), {TAB} (tab columns), {HR} (horizontal rule), {<} {C} {>} (per-line alignment)."
+        },
+        "alignH": {
+          "type": "string",
+          "enum": ["left", "center", "right"],
+          "default": "center",
+          "description": "Horizontal text alignment."
+        },
+        "alignV": {
+          "type": "string",
+          "enum": ["top", "middle", "bottom"],
+          "default": "middle",
+          "description": "Vertical text alignment."
+        },
+        "fillColor": {
+          "type": "string",
+          "enum": ["R", "O", "Y", "G", "B", "V", "W", ""],
+          "default": "",
+          "description": "Fill empty tiles with a colour. Empty string for none."
+        },
+        "borderColor": {
+          "type": "string",
+          "enum": ["R", "O", "Y", "G", "B", "V", "W", ""],
+          "default": "",
+          "description": "Border colour around the board. Empty string for none."
+        }
+      }
+    },
+    "savedMessage": {
+      "allOf": [
+        { "$ref": "#/$defs/boardProperties" },
+        {
+          "type": "object",
+          "required": ["name", "text"],
+          "properties": {
+            "name": {
+              "type": "string",
+              "description": "Display name for the saved message."
+            }
+          }
+        }
+      ]
+    },
+    "queueItem": {
+      "oneOf": [
+        {
+          "allOf": [
+            { "$ref": "#/$defs/boardProperties" },
+            {
+              "type": "object",
+              "required": ["type", "name", "text"],
+              "properties": {
+                "type": {
+                  "const": "saved"
+                },
+                "name": {
+                  "type": "string",
+                  "description": "Display name for the queued message."
+                }
+              }
+            }
+          ]
+        },
+        {
+          "type": "object",
+          "required": ["type"],
+          "properties": {
+            "type": {
+              "enum": ["clock", "worldclock", "weather"]
+            }
+          },
+          "additionalProperties": false
+        }
+      ]
+    }
+  }
+}

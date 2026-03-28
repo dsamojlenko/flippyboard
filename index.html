@@ -2150,12 +2150,39 @@ function exportConfig() {
   if (!raw) return;
   const s = JSON.parse(raw);
   const exported = {
-    rows: s.rows, cols: s.cols, is24h: s.is24h, fullFlip: s.fullFlip,
-    clockTimezone: s.clockTimezone,
-    soundEnabled: s.soundEnabled, queueDwellSec: s.queueDwellSec,
-    queue: s.queue, savedMessages: s.savedMessages,
+    version: 1,
+    settings: {
+      rows: s.rows, cols: s.cols,
+      fullFlip: s.fullFlip, soundEnabled: s.soundEnabled,
+    },
+    queue: {
+      dwellTime: s.queueDwellSec,
+      items: (s.queue || []).map(item => {
+        if (item.type === 'saved') {
+          const out = { type: 'saved', name: item.name, text: item.text };
+          if (item.alignH) out.alignH = item.alignH;
+          if (item.alignV) out.alignV = item.alignV;
+          if (item.fillColor) out.fillColor = item.fillColor;
+          if (item.borderColor) out.borderColor = item.borderColor;
+          return out;
+        }
+        return { type: item.type };
+      }),
+    },
+    saved: (s.savedMessages || []).map(m => {
+      const out = { name: m.name, text: m.text };
+      if (m.alignH) out.alignH = m.alignH;
+      if (m.alignV) out.alignV = m.alignV;
+      if (m.fillColor) out.fillColor = m.fillColor;
+      if (m.borderColor) out.borderColor = m.borderColor;
+      return out;
+    }),
+    clock: {
+      is24h: s.is24h || false,
+      timezone: s.clockTimezone || '',
+    },
     worldClock: s.worldClock || { cities: [], customCities: [] },
-    weather: s.weather,
+    weather: s.weather || {},
   };
   const blob = new Blob([JSON.stringify(exported, null, 2)], { type: 'application/json' });
   const a = document.createElement('a');
@@ -2169,11 +2196,29 @@ function importConfig(file) {
   const reader = new FileReader();
   reader.onload = () => {
     try {
-      const s = JSON.parse(reader.result);
-      if (typeof s !== 'object' || s === null || !('rows' in s) || !('cols' in s)) {
-        alert('Invalid config file.');
+      const data = JSON.parse(reader.result);
+      if (typeof data !== 'object' || data === null || data.version !== 1) {
+        alert('Invalid or unsupported config file.');
         return;
       }
+      const s = {};
+      if (data.settings) {
+        if (data.settings.rows) s.rows = data.settings.rows;
+        if (data.settings.cols) s.cols = data.settings.cols;
+        if (typeof data.settings.fullFlip === 'boolean') s.fullFlip = data.settings.fullFlip;
+        if (typeof data.settings.soundEnabled === 'boolean') s.soundEnabled = data.settings.soundEnabled;
+      }
+      if (data.clock) {
+        if (typeof data.clock.is24h === 'boolean') s.is24h = data.clock.is24h;
+        if (data.clock.timezone != null) s.clockTimezone = data.clock.timezone;
+      }
+      if (data.queue) {
+        if (data.queue.dwellTime) s.queueDwellSec = data.queue.dwellTime;
+        if (Array.isArray(data.queue.items)) s.queue = data.queue.items;
+      }
+      if (Array.isArray(data.saved)) s.savedMessages = data.saved;
+      if (data.worldClock) s.worldClock = data.worldClock;
+      if (data.weather) s.weather = data.weather;
       localStorage.setItem(STORAGE_KEY, JSON.stringify(s));
       loadState();
       buildBoard();

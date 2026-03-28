@@ -1008,7 +1008,54 @@ document.getElementById('btn-export').addEventListener('click', async () => {
     api('GET', '/queue/items'),
     api('GET', '/worldclock/cities'),
   ]);
-  const exported = { settings: s, savedMessages: msgs, queueItems: items, worldClockCities: cities };
+  const exported = {
+    version: 1,
+    settings: {
+      rows: parseInt(s.rows) || 6,
+      cols: parseInt(s.cols) || 22,
+      fullFlip: s.fullFlip === 'true',
+      soundEnabled: s.soundDestination !== 'off',
+    },
+    queue: {
+      dwellTime: parseInt(s.queueDwellSec) || 12,
+      items: items.map(item => {
+        const config = JSON.parse(item.config || '{}');
+        if (item.type === 'text') {
+          const out = { type: 'saved', name: config.name || '', text: config.text || '' };
+          if (config.alignH) out.alignH = config.alignH;
+          if (config.alignV) out.alignV = config.alignV;
+          if (config.fillColor) out.fillColor = config.fillColor;
+          if (config.borderColor) out.borderColor = config.borderColor;
+          return out;
+        }
+        return { type: item.type };
+      }),
+    },
+    saved: msgs.map(m => {
+      const out = { name: m.name, text: m.text };
+      if (m.align_h && m.align_h !== 'center') out.alignH = m.align_h;
+      if (m.align_v && m.align_v !== 'middle') out.alignV = m.align_v;
+      if (m.fill_color) out.fillColor = m.fill_color;
+      if (m.border_color) out.borderColor = m.border_color;
+      return out;
+    }),
+    clock: {
+      is24h: s.is24h === 'true',
+      timezone: s.clockTimezone || '',
+    },
+    worldClock: {
+      cities: cities.filter(c => !c.is_custom && c.is_selected).map(c => c.city),
+      customCities: cities.filter(c => c.is_custom).map(c => ({ name: c.city, tz: c.timezone })),
+    },
+    weather: {
+      lat: parseFloat(s.weatherLat) || null,
+      lon: parseFloat(s.weatherLon) || null,
+      city: s.weatherCity || '',
+      unit: s.weatherUnit || 'F',
+      autoRefresh: s.weatherAutoRefresh === 'true',
+      refreshMin: parseInt(s.weatherRefreshMin) || 15,
+    },
+  };
   const blob = new Blob([JSON.stringify(exported, null, 2)], { type: 'application/json' });
   const a = document.createElement('a');
   a.href = URL.createObjectURL(blob);
@@ -1025,14 +1072,90 @@ importFileInput.addEventListener('change', async (e) => {
   reader.onload = async () => {
     try {
       const data = JSON.parse(reader.result);
+      if (typeof data !== 'object' || data === null || data.version !== 1) {
+        alert('Invalid or unsupported config file.');
+        return;
+      }
+      // Import settings
       if (data.settings) {
-        for (const [k, v] of Object.entries(data.settings)) {
-          await api('PATCH', '/settings', { [k]: v });
+        await api('PATCH', '/settings', {
+          rows: String(data.settings.rows || 6),
+          cols: String(data.settings.cols || 22),
+          fullFlip: String(data.settings.fullFlip ?? true),
+        });
+      }
+      if (data.clock) {
+        await api('PATCH', '/settings', {
+          is24h: String(data.clock.is24h ?? false),
+          clockTimezone: data.clock.timezone || '',
+        });
+      }
+      if (data.weather) {
+        await api('PATCH', '/settings', {
+          weatherLat: String(data.weather.lat ?? 'null'),
+          weatherLon: String(data.weather.lon ?? 'null'),
+          weatherCity: data.weather.city || '',
+          weatherUnit: data.weather.unit || 'F',
+          weatherAutoRefresh: String(data.weather.autoRefresh ?? false),
+          weatherRefreshMin: String(data.weather.refreshMin || 15),
+        });
+      }
+      if (data.queue) {
+        await api('PATCH', '/settings', { queueDwellSec: String(data.queue.dwellTime || 12) });
+        await api('DELETE', '/queue/items/all');
+        if (Array.isArray(data.queue.items)) {
+          for (const item of data.queue.items) {
+            if (item.type === 'saved') {
+              const config = { name: item.name, text: item.text };
+              if (item.alignH) config.alignH = item.alignH;
+              if (item.alignV) config.alignV = item.alignV;
+              if (item.fillColor) config.fillColor = item.fillColor;
+              if (item.borderColor) config.borderColor = item.borderColor;
+              await api('POST', '/queue/items', { type: 'text', config: JSON.stringify(config) });
+            } else {
+              await api('POST', '/queue/items', { type: item.type, config: '{}' });
+            }
+          }
+        }
+      }
+      // Import saved messages
+      if (Array.isArray(data.saved)) {
+        await api('DELETE', '/messages/all');
+        for (const m of data.saved) {
+          await api('POST', '/messages', {
+            name: m.name, text: m.text,
+            alignH: m.alignH || 'center', alignV: m.alignV || 'middle',
+            fillColor: m.fillColor || '', borderColor: m.borderColor || '',
+          });
+        }
+      }
+      // Import world clock cities
+      if (data.worldClock) {
+        const existing = await api('GET', '/worldclock/cities');
+        const selectedNames = new Set(data.worldClock.cities || []);
+        // Toggle built-in cities to match export; remove existing custom cities
+        for (const c of existing) {
+          if (c.is_custom) {
+            await api('DELETE', `/worldclock/cities/${c.id}`);
+          } else {
+            const shouldSelect = selectedNames.has(c.city);
+            if ((!!c.is_selected) !== shouldSelect) {
+              await api('PATCH', `/worldclock/cities/${c.id}`, { selected: shouldSelect });
+            }
+          }
+        }
+        // Add custom cities from import
+        for (const c of (data.worldClock.customCities || [])) {
+          await api('POST', '/worldclock/cities', { city: c.name, timezone: c.tz, isCustom: true });
         }
       }
       // Reload everything
       await Promise.all([loadSavedMessages(), loadQueue(), loadWorldClockCities()]);
-    } catch { alert('Failed to parse config file.'); }
+      location.reload();
+    } catch (err) {
+      console.error(err);
+      alert('Failed to import config file.');
+    }
   };
   reader.readAsText(e.target.files[0]);
   e.target.value = '';
