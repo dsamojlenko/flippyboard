@@ -4,6 +4,8 @@
 
 A split-flap display simulator with a Node.js server, separate display and admin pages, and real-time sync via WebSocket. No build tools or API keys required.
 
+**[Live Demo](https://dsamojlenko.github.io/flippyboard/)**
+
 ## Getting Started
 
 ```bash
