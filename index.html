@@ -419,6 +419,40 @@ label {
   display: block;
 }
 
+/* ── Insert Menu ── */
+.insert-menu {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 180px;
+}
+.insert-menu-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 10px;
+  border-radius: 4px;
+  cursor: pointer;
+  color: var(--text-dim);
+  font-family: var(--font-ui);
+  font-size: 12px;
+  transition: background 0.12s, color 0.12s;
+  border: none;
+  background: none;
+  width: 100%;
+  text-align: left;
+}
+.insert-menu-item:hover {
+  background: rgba(255,255,255,0.08);
+  color: var(--text);
+}
+.insert-menu-item code {
+  font-family: var(--font-ui);
+  font-weight: 600;
+  color: var(--accent);
+  min-width: 42px;
+}
+
 /* ── Color Palette ── */
 .color-swatches {
   display: flex;
@@ -671,6 +705,25 @@ label {
           </button>
           <div class="toolbar-dropdown-menu" id="menu-border">
             <div class="color-swatches" id="border-swatches"></div>
+          </div>
+        </div>
+
+        <div class="toolbar-sep"></div>
+
+        <div class="toolbar-dropdown">
+          <button class="toolbar-btn" id="btn-insert" title="Insert formatting code">
+            <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-5 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z"/></svg>
+            Insert
+          </button>
+          <div class="toolbar-dropdown-menu" id="menu-insert">
+            <div class="insert-menu">
+              <button class="insert-menu-item" data-code="{<>}"><code>{&lt;&gt;}</code> Justify</button>
+              <button class="insert-menu-item" data-code="{TAB}"><code>{TAB}</code> Tab Column</button>
+              <button class="insert-menu-item" data-code="{HR}"><code>{HR}</code> Horiz. Rule</button>
+              <button class="insert-menu-item" data-code="{<}"><code>{&lt;}</code> Left Align</button>
+              <button class="insert-menu-item" data-code="{C}"><code>{C}</code> Centre</button>
+              <button class="insert-menu-item" data-code="{>}"><code>{&gt;}</code> Right Align</button>
+            </div>
           </div>
         </div>
       </div>
@@ -1205,27 +1258,76 @@ function parseColorCodes(text) {
 
 function expandJustify(text, width) {
   return text.split('\n').map(line => {
-    const idx = line.indexOf('{>}');
+    const idx = line.indexOf('{<>}');
     if (idx === -1) return line;
     const left = line.slice(0, idx);
-    const right = line.slice(idx + 3);
+    const right = line.slice(idx + 4);
     const gap = Math.max(1, width - left.length - right.length);
     return left + ' '.repeat(gap) + right;
   }).join('\n');
 }
 
+function expandTab(text, width) {
+  return text.split('\n').map(line => {
+    if (line.indexOf('{TAB}') === -1) return line;
+    const segments = line.split('{TAB}');
+    const n = segments.length;
+    const colWidth = Math.floor(width / n);
+    let result = '';
+    for (let i = 0; i < n; i++) {
+      const seg = segments[i];
+      if (i === n - 1) {
+        result += seg;
+      } else {
+        const target = colWidth * (i + 1);
+        const pad = Math.max(1, target - result.length - seg.length);
+        result += seg + ' '.repeat(pad);
+      }
+    }
+    return result;
+  }).join('\n');
+}
+
+function expandHR(text, width) {
+  return text.split('\n').map(line => {
+    if (line.trim() === '{HR}') return '-'.repeat(width);
+    return line;
+  }).join('\n');
+}
+
+const ALIGN_LEFT   = '\uE010';
+const ALIGN_CENTER = '\uE011';
+const ALIGN_RIGHT  = '\uE012';
+
+function expandLineAlign(text) {
+  return text.split('\n').map(line => {
+    if (line.startsWith('{<}')) return ALIGN_LEFT + line.slice(3);
+    if (line.startsWith('{C}')) return ALIGN_CENTER + line.slice(3);
+    if (line.startsWith('{>}')) return ALIGN_RIGHT + line.slice(3);
+    return line;
+  }).join('\n');
+}
+
 function layoutLines(text, numCols, numRows, hAlign, vAlign) {
   text = parseColorCodes(text);
+  text = expandHR(text, numCols);
+  text = expandTab(text, numCols);
   text = expandJustify(text, numCols);
+  text = expandLineAlign(text);
   const lines = wordWrap(text.toUpperCase(), numCols);
 
   const aligned = lines.map(line => {
+    let lineAlign = hAlign;
+    if (line.charAt(0) === ALIGN_LEFT)   { line = line.slice(1); lineAlign = 'left'; }
+    else if (line.charAt(0) === ALIGN_CENTER) { line = line.slice(1); lineAlign = 'center'; }
+    else if (line.charAt(0) === ALIGN_RIGHT)  { line = line.slice(1); lineAlign = 'right'; }
+    line = line.trimStart();
     if (line.length >= numCols) return line.slice(0, numCols);
     const gap = numCols - line.length;
-    if (hAlign === 'center') {
+    if (lineAlign === 'center') {
       const left = Math.floor(gap / 2);
       return ' '.repeat(left) + line + ' '.repeat(gap - left);
-    } else if (hAlign === 'right') {
+    } else if (lineAlign === 'right') {
       return ' '.repeat(gap) + line;
     }
     return line + ' '.repeat(gap);
@@ -1915,14 +2017,14 @@ function loadDefaults() {
     queueDwellSec: 12,
     queue: [
       { type: 'saved', name: 'Welcome to\nFlippy Board', text: 'Welcome to\nFlippy Board' },
-      { type: 'saved', name: 'Menu', text: 'Burger{>}$14\nCheesburger{>}$15\nFries{>}$4\nMilkshake{>}$5\nPop{>}$2', alignH: 'left', alignV: 'top' },
+      { type: 'saved', name: 'Menu', text: 'Burger{<>}$14\nCheesburger{<>}$15\nFries{<>}$4\nMilkshake{<>}$5\nPop{<>}$2', alignH: 'left', alignV: 'top' },
       { type: 'clock' },
       { type: 'worldclock' },
       { type: 'weather' },
     ],
     savedMessages: [
       { name: 'Welcome to\nFlippy Board', text: 'Welcome to\nFlippy Board' },
-      { name: 'Menu', text: 'Burger{>}$14\nCheesburger{>}$15\nFries{>}$4\nMilkshake{>}$5\nPop{>}$2', alignH: 'left', alignV: 'top' },
+      { name: 'Menu', text: 'Burger{<>}$14\nCheesburger{<>}$15\nFries{<>}$4\nMilkshake{<>}$5\nPop{<>}$2', alignH: 'left', alignV: 'top' },
     ],
     weather: {
       lat: city.lat, lon: city.lon, city: city.city,
@@ -2238,6 +2340,29 @@ document.addEventListener('DOMContentLoaded', () => {
   // Restore toolbar indicators for fill/border from persisted state
   updateToolbarIndicator('btn-fill', fillColor);
   updateToolbarIndicator('btn-border', borderColor);
+
+  // Insert menu - insert formatting codes at cursor (or line start for alignment codes)
+  const LINE_PREFIX_CODES = new Set(['{<}', '{C}', '{>}']);
+  document.querySelectorAll('.insert-menu-item').forEach(item => {
+    item.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const ta = document.getElementById('text-input');
+      const code = item.dataset.code;
+      let insertAt, cursorAfter;
+      if (LINE_PREFIX_CODES.has(code)) {
+        const lineStart = ta.value.lastIndexOf('\n', ta.selectionStart - 1) + 1;
+        insertAt = lineStart;
+        cursorAfter = ta.selectionStart + code.length;
+      } else {
+        insertAt = ta.selectionStart;
+        cursorAfter = insertAt + code.length;
+      }
+      ta.value = ta.value.substring(0, insertAt) + code + ta.value.substring(LINE_PREFIX_CODES.has(code) ? insertAt : ta.selectionEnd);
+      ta.selectionStart = ta.selectionEnd = cursorAfter;
+      ta.focus();
+      document.querySelectorAll('.toolbar-dropdown.open').forEach(d => d.classList.remove('open'));
+    });
+  });
 
   // Toolbar dropdown toggles
   document.querySelectorAll('.toolbar-dropdown > .toolbar-btn').forEach(btn => {

@@ -30,6 +30,13 @@ The standalone `index.html` is also available at `http://localhost:3000/` and wo
 - Animated split-flap tile transitions with authentic flip sound
 - Word wrapping, horizontal alignment (left/center/right), vertical alignment (top/middle/bottom)
 - Color tiles: insert `{R}` `{O}` `{Y}` `{G}` `{B}` `{V}` `{W}` for red, orange, yellow, green, blue, violet, and white
+- Formatting codes (available from the Insert dropdown):
+  - `{<>}` — justify (push left and right text apart to fill the row)
+  - `{TAB}` — dynamic tab columns (divides the row into equal columns based on number of tabs)
+  - `{HR}` — horizontal rule (fills an entire line with dashes)
+  - `{<}` — left-align this line (per-line override)
+  - `{C}` — center this line (per-line override)
+  - `{>}` — right-align this line (per-line override)
 - Fill (color empty tiles) and border (colored frame) from color pickers
 - Configurable board size (rows and columns)
 - Full flip mode: flip through every intermediate character

@@ -30,12 +30,54 @@ export function parseColorCodes(text) {
 
 export function expandJustify(text, width) {
   return text.split('\n').map(line => {
-    const idx = line.indexOf('{>}');
+    const idx = line.indexOf('{<>}');
     if (idx === -1) return line;
     const left = line.slice(0, idx);
-    const right = line.slice(idx + 3);
+    const right = line.slice(idx + 4);
     const gap = Math.max(1, width - left.length - right.length);
     return left + ' '.repeat(gap) + right;
+  }).join('\n');
+}
+
+export function expandTab(text, width) {
+  return text.split('\n').map(line => {
+    if (line.indexOf('{TAB}') === -1) return line;
+    const segments = line.split('{TAB}');
+    const n = segments.length;
+    const colWidth = Math.floor(width / n);
+    let result = '';
+    for (let i = 0; i < n; i++) {
+      const seg = segments[i];
+      if (i === n - 1) {
+        result += seg;
+      } else {
+        const target = colWidth * (i + 1);
+        const pad = Math.max(1, target - result.length - seg.length);
+        result += seg + ' '.repeat(pad);
+      }
+    }
+    return result;
+  }).join('\n');
+}
+
+export function expandHR(text, width) {
+  return text.split('\n').map(line => {
+    if (line.trim() === '{HR}') return '-'.repeat(width);
+    return line;
+  }).join('\n');
+}
+
+// Line-alignment sentinels (private use area)
+export const ALIGN_LEFT    = '\uE010';
+export const ALIGN_CENTER  = '\uE011';
+export const ALIGN_RIGHT   = '\uE012';
+
+export function expandLineAlign(text) {
+  return text.split('\n').map(line => {
+    if (line.startsWith('{<}')) return ALIGN_LEFT + line.slice(3);
+    if (line.startsWith('{C}')) return ALIGN_CENTER + line.slice(3);
+    if (line.startsWith('{>}')) return ALIGN_RIGHT + line.slice(3);
+    return line;
   }).join('\n');
 }
 

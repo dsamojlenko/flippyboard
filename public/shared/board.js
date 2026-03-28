@@ -1,4 +1,4 @@
-import { CHARS, CHAR_SET, COLOR_TILES, CODE_TO_COLOR, sanitize, parseColorCodes, expandJustify, WMO_CODES } from './chars.js';
+import { CHARS, CHAR_SET, COLOR_TILES, CODE_TO_COLOR, sanitize, parseColorCodes, expandJustify, expandTab, expandHR, expandLineAlign, ALIGN_LEFT, ALIGN_CENTER, ALIGN_RIGHT, WMO_CODES } from './chars.js';
 import { playClick } from './audio.js';
 
 function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
@@ -325,16 +325,24 @@ export class Board {
 
   static layoutLines(text, numCols, numRows, hAlign, vAlign) {
     text = parseColorCodes(text);
+    text = expandHR(text, numCols);
+    text = expandTab(text, numCols);
     text = expandJustify(text, numCols);
+    text = expandLineAlign(text);
     const lines = Board.wordWrap(text.toUpperCase(), numCols);
 
     const aligned = lines.map(line => {
+      let lineAlign = hAlign;
+      if (line.charAt(0) === ALIGN_LEFT)   { line = line.slice(1); lineAlign = 'left'; }
+      else if (line.charAt(0) === ALIGN_CENTER) { line = line.slice(1); lineAlign = 'center'; }
+      else if (line.charAt(0) === ALIGN_RIGHT)  { line = line.slice(1); lineAlign = 'right'; }
+      line = line.trimStart();
       if (line.length >= numCols) return line.slice(0, numCols);
       const gap = numCols - line.length;
-      if (hAlign === 'center') {
+      if (lineAlign === 'center') {
         const left = Math.floor(gap / 2);
         return ' '.repeat(left) + line + ' '.repeat(gap - left);
-      } else if (hAlign === 'right') {
+      } else if (lineAlign === 'right') {
         return ' '.repeat(gap) + line;
       }
       return line + ' '.repeat(gap);

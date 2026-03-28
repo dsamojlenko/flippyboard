@@ -277,6 +277,40 @@ label {
   display: block;
 }
 
+/* ── Insert Menu ── */
+.insert-menu {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 180px;
+}
+.insert-menu-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 10px;
+  border-radius: 4px;
+  cursor: pointer;
+  color: var(--text-dim);
+  font-family: var(--font-ui);
+  font-size: 12px;
+  transition: background 0.12s, color 0.12s;
+  border: none;
+  background: none;
+  width: 100%;
+  text-align: left;
+}
+.insert-menu-item:hover {
+  background: rgba(255,255,255,0.08);
+  color: var(--text);
+}
+.insert-menu-item code {
+  font-family: var(--font-ui);
+  font-weight: 600;
+  color: var(--accent);
+  min-width: 42px;
+}
+
 /* ── Color Palette ── */
 .color-swatches {
   display: flex;

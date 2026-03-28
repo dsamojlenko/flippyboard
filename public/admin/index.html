@@ -98,6 +98,25 @@
             <div class="color-swatches" id="border-swatches"></div>
           </div>
         </div>
+
+        <div class="toolbar-sep"></div>
+
+        <div class="toolbar-dropdown">
+          <button class="toolbar-btn" id="btn-insert" title="Insert formatting code">
+            <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-5 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z"/></svg>
+            Insert
+          </button>
+          <div class="toolbar-dropdown-menu" id="menu-insert">
+            <div class="insert-menu">
+              <button class="insert-menu-item" data-code="{<>}"><code>{&lt;&gt;}</code> Justify</button>
+              <button class="insert-menu-item" data-code="{TAB}"><code>{TAB}</code> Tab Column</button>
+              <button class="insert-menu-item" data-code="{HR}"><code>{HR}</code> Horiz. Rule</button>
+              <button class="insert-menu-item" data-code="{<}"><code>{&lt;}</code> Left Align</button>
+              <button class="insert-menu-item" data-code="{C}"><code>{C}</code> Centre</button>
+              <button class="insert-menu-item" data-code="{>}"><code>{&gt;}</code> Right Align</button>
+            </div>
+          </div>
+        </div>
       </div>
       <textarea id="text-input" placeholder="Type your message..." spellcheck="false"></textarea>
       <div class="inline-row">
@@ -670,6 +689,29 @@ buildActionSwatches('border-swatches', (code) => {
   borderColor = code === null ? null : (borderColor === code ? null : code);
   updateToolbarIndicator('btn-border', borderColor);
   api('PATCH', '/settings', { borderColor: borderColor || '' });
+});
+
+// Insert menu - insert formatting codes at cursor (or line start for alignment codes)
+const LINE_PREFIX_CODES = new Set(['{<}', '{C}', '{>}']);
+document.querySelectorAll('.insert-menu-item').forEach(item => {
+  item.addEventListener('click', (e) => {
+    e.stopPropagation();
+    const ta = document.getElementById('text-input');
+    const code = item.dataset.code;
+    let insertAt, cursorAfter;
+    if (LINE_PREFIX_CODES.has(code)) {
+      const lineStart = ta.value.lastIndexOf('\n', ta.selectionStart - 1) + 1;
+      insertAt = lineStart;
+      cursorAfter = ta.selectionStart + code.length;
+    } else {
+      insertAt = ta.selectionStart;
+      cursorAfter = insertAt + code.length;
+    }
+    ta.value = ta.value.substring(0, insertAt) + code + ta.value.substring(LINE_PREFIX_CODES.has(code) ? insertAt : ta.selectionEnd);
+    ta.selectionStart = ta.selectionEnd = cursorAfter;
+    ta.focus();
+    document.querySelectorAll('.toolbar-dropdown.open').forEach(d => d.classList.remove('open'));
+  });
 });
 
 // Toolbar dropdown toggles
