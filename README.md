@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="flippyboard.png" alt="Flippy Board" width="400">
+</p>
+
 # Flippy Board
 
 A split-flap display simulator with a Node.js server, separate display and admin pages, and real-time sync via WebSocket. No build tools or API keys required.
