@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Flippy Board — flipperboard.ca</title>
+<title>Flippy Board</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@600;700&family=Azeret+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
@@ -98,139 +98,6 @@ body {
   border-radius: 50%;
   display: inline-block;
   border: 1px solid rgba(255,255,255,0.3);
-}
-
-/* ── Board Frame ── */
-.board-frame {
-  background: var(--bezel);
-  border: 1px solid var(--bezel-edge);
-  border-radius: 10px;
-  padding: 18px;
-  box-shadow:
-    0 2px 8px rgba(0,0,0,0.5),
-    0 12px 40px rgba(0,0,0,0.4),
-    inset 0 1px 0 rgba(255,255,255,0.04);
-  position: relative;
-  overflow: hidden;
-}
-
-.board-frame::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  border-radius: 10px;
-  background: linear-gradient(180deg, rgba(255,255,255,0.015) 0%, transparent 40%);
-  pointer-events: none;
-}
-
-.board-inner {
-  background: var(--board-bg);
-  border-radius: 5px;
-  padding: 10px;
-  box-shadow: inset 0 2px 6px rgba(0,0,0,0.5);
-}
-
-.board {
-  display: grid;
-  gap: var(--tile-gap);
-  justify-content: center;
-}
-
-/* ── Tile ── */
-.tile {
-  position: relative;
-  width: var(--tw);
-  height: var(--th);
-  perspective: 250px;
-  font-family: var(--font-flap);
-  font-weight: 700;
-}
-
-.half, .flap {
-  position: absolute;
-  left: 0;
-  width: 100%;
-  height: 50%;
-  overflow: hidden;
-  backface-visibility: hidden;
-}
-
-.half.upper {
-  top: 0;
-  background: var(--tile-bg-upper);
-  border-radius: var(--tile-radius) var(--tile-radius) 0 0;
-  border-bottom: 1px solid var(--split-line);
-}
-
-.half.lower {
-  top: 50%;
-  background: var(--tile-bg-lower);
-  border-radius: 0 0 var(--tile-radius) var(--tile-radius);
-  border-top: 1px solid rgba(255,255,255,0.02);
-}
-
-.half .ch, .flap .ch {
-  position: absolute;
-  left: 0;
-  width: 100%;
-  height: 200%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: calc(var(--th) * 0.68);
-  color: var(--char-color);
-  text-shadow: 0 0 8px var(--char-glow);
-  user-select: none;
-  line-height: 1;
-}
-
-.half.upper .ch { top: 0; }
-.half.lower .ch { bottom: 0; }
-
-/* ── Flaps (animated) ── */
-.flap {
-  display: none;
-  will-change: transform;
-  pointer-events: none;
-  z-index: 2;
-}
-
-.flap-top {
-  top: 0;
-  transform-origin: center bottom;
-  background: var(--tile-bg-upper);
-  border-radius: var(--tile-radius) var(--tile-radius) 0 0;
-  border-bottom: 1px solid var(--split-line);
-}
-
-.flap-bottom {
-  top: 50%;
-  transform-origin: center top;
-  background: var(--tile-bg-lower);
-  border-radius: 0 0 var(--tile-radius) var(--tile-radius);
-}
-
-.flap-top .ch { top: 0; }
-.flap-bottom .ch { bottom: 0; }
-
-.flap-top.flip {
-  display: block;
-  animation: flap-out var(--flip-speed) ease-in forwards;
-}
-
-.flap-bottom.flip {
-  display: block;
-  animation: flap-in var(--flip-speed) ease-out forwards;
-}
-
-@keyframes flap-out {
-  0%   { transform: rotateX(0deg); }
-  100% { transform: rotateX(90deg); }
-}
-
-@keyframes flap-in {
-  0%   { transform: rotateX(-90deg); }
-  100% { transform: rotateX(0deg); box-shadow: 0 2px 4px rgba(0,0,0,0.3); }
 }
 
 /* ── Panel ── */
@@ -611,16 +478,151 @@ label {
 .autocomplete-item .ac-sub {
   font-size: 10px; color: var(--text-dim); margin-top: 1px;
 }
+
+/* ── Board Frame ── */
+.board-frame {
+  background: var(--bezel);
+  border: 1px solid var(--bezel-edge);
+  border-radius: 10px;
+  padding: 18px;
+  box-shadow:
+    0 2px 8px rgba(0,0,0,0.5),
+    0 12px 40px rgba(0,0,0,0.4),
+    inset 0 1px 0 rgba(255,255,255,0.04);
+  position: relative;
+  overflow: hidden;
+}
+
+.board-frame::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 10px;
+  background: linear-gradient(180deg, rgba(255,255,255,0.015) 0%, transparent 40%);
+  pointer-events: none;
+}
+
+.board-inner {
+  background: var(--board-bg);
+  border-radius: 5px;
+  padding: 10px;
+  box-shadow: inset 0 2px 6px rgba(0,0,0,0.5);
+}
+
+.board {
+  display: grid;
+  gap: var(--tile-gap);
+  justify-content: center;
+}
+
+/* ── Tile ── */
+.tile {
+  position: relative;
+  width: var(--tw);
+  height: var(--th);
+  perspective: 250px;
+  font-family: var(--font-flap);
+  font-weight: 700;
+}
+
+.half, .flap {
+  position: absolute;
+  left: 0;
+  width: 100%;
+  height: 50%;
+  overflow: hidden;
+  backface-visibility: hidden;
+}
+
+.half.upper {
+  top: 0;
+  background: var(--tile-bg-upper);
+  border-radius: var(--tile-radius) var(--tile-radius) 0 0;
+  border-bottom: 1px solid var(--split-line);
+}
+
+.half.lower {
+  top: 50%;
+  background: var(--tile-bg-lower);
+  border-radius: 0 0 var(--tile-radius) var(--tile-radius);
+  border-top: 1px solid rgba(255,255,255,0.02);
+}
+
+.half .ch, .flap .ch {
+  position: absolute;
+  left: 0;
+  width: 100%;
+  height: 200%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: calc(var(--th) * 0.68);
+  color: var(--char-color);
+  text-shadow: 0 0 8px var(--char-glow);
+  user-select: none;
+  line-height: 1;
+}
+
+.half.upper .ch { top: 0; }
+.half.lower .ch { bottom: 0; }
+
+/* ── Flaps (animated) ── */
+.flap {
+  display: none;
+  will-change: transform;
+  pointer-events: none;
+  z-index: 2;
+}
+
+.flap-top {
+  top: 0;
+  transform-origin: center bottom;
+  background: var(--tile-bg-upper);
+  border-radius: var(--tile-radius) var(--tile-radius) 0 0;
+  border-bottom: 1px solid var(--split-line);
+}
+
+.flap-bottom {
+  top: 50%;
+  transform-origin: center top;
+  background: var(--tile-bg-lower);
+  border-radius: 0 0 var(--tile-radius) var(--tile-radius);
+}
+
+.flap-top .ch { top: 0; }
+.flap-bottom .ch { bottom: 0; }
+
+.flap-top.flip {
+  display: block;
+  animation: flap-out var(--flip-speed) ease-in forwards;
+}
+
+.flap-bottom.flip {
+  display: block;
+  animation: flap-in var(--flip-speed) ease-out forwards;
+}
+
+@keyframes flap-out {
+  0%   { transform: rotateX(0deg); }
+  100% { transform: rotateX(90deg); }
+}
+
+@keyframes flap-in {
+  0%   { transform: rotateX(-90deg); }
+  100% { transform: rotateX(0deg); box-shadow: 0 2px 4px rgba(0,0,0,0.3); }
+}
+
 </style>
 </head>
 <body>
 
 <div class="toolbar">
   <span class="toolbar-title">Flippy Board</span>
-  <button class="toolbar-btn" id="btn-sound" title="Toggle sound">
+  <button class="toolbar-btn" id="btn-sound" title="Cycle sound destination: Display / Admin / Both / Off">
     <svg viewBox="0 0 24 24"><path id="sound-icon" d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/></svg>
-    <span>Sound</span>
+    <span id="sound-label">Sound: On</span>
   </button>
+
   <button class="toolbar-btn" id="btn-fullscreen" title="Fullscreen">
     <svg viewBox="0 0 24 24"><path d="M7 14H5v5h5v-2H7v-3zm-2-4h2V7h3V5H5v5zm12 7h-3v2h5v-5h-2v3zM14 5v2h3v3h2V5h-5z"/></svg>
     <span>Fullscreen</span>
@@ -641,8 +643,8 @@ label {
     <button class="tab" data-tab="weather">Weather</button>
     <button class="tab" data-tab="saved">Saved</button>
     <button class="tab" data-tab="queue">Queue</button>
-    <button class="tab" data-tab="api">API</button>
     <button class="tab" data-tab="settings">Settings</button>
+    <button class="tab" data-tab="api">API</button>
   </div>
 
   <div class="tab-content">
@@ -736,46 +738,10 @@ label {
       </div>
     </div>
 
-    <!-- WEATHER -->
-    <div class="tab-pane" id="pane-weather">
-      <div class="row">
-        <div style="flex:3">
-          <label>City <span style="color:var(--text-dim);text-transform:none;font-size:10px;letter-spacing:0">&mdash; or use auto-detect</span></label>
-          <input type="text" id="weather-city" placeholder="e.g. New York">
-        </div>
-        <div style="flex:0 0 auto">
-          <label>&nbsp;</label>
-          <button class="btn" id="btn-weather-search">Search</button>
-        </div>
-        <div style="flex:0 0 auto">
-          <label>&nbsp;</label>
-          <button class="btn" id="btn-weather-locate">Auto-Detect</button>
-        </div>
-      </div>
-      <div id="weather-status" style="color:var(--text-dim);font-size:11px;margin-top:8px"></div>
-      <div class="inline-row" style="margin-top:12px">
-        <button class="btn" id="btn-weather-show">Show Weather</button>
-        <button class="btn" id="btn-weather-queue">Add to Queue</button>
-        <label style="margin:0;display:flex;align-items:center;gap:6px">
-          <input type="checkbox" id="chk-weather-auto"> Auto-refresh
-        </label>
-        <label style="margin:0;display:flex;align-items:center;gap:6px">
-          Every
-          <input type="number" id="weather-refresh-min" value="15" min="5" max="120" style="width:50px">
-          <span style="color:var(--text-dim)">min</span>
-        </label>
-        <div class="align-group" style="margin-left:auto">
-          <button class="align-btn active" data-val="F" id="weather-unit-f">&deg;F</button>
-          <button class="align-btn" data-val="C" id="weather-unit-c">&deg;C</button>
-        </div>
-      </div>
-    </div>
-
     <!-- CLOCK -->
     <div class="tab-pane" id="pane-clock">
       <p style="color:var(--text-dim);margin-bottom:12px;line-height:1.5">
-        Displays the current time and date, updating every minute.<br>
-        The board will show a live clock centered on the display.
+        Displays the current time and date on the display, updating every minute.
       </p>
       <div class="row" style="margin-bottom:12px">
         <div style="flex:3">
@@ -784,7 +750,7 @@ label {
         </div>
       </div>
       <div class="inline-row">
-        <button class="btn" id="btn-clock-toggle">Start Clock</button>
+        <button class="btn" id="btn-clock-start">Start Clock</button>
         <button class="btn" id="btn-clock-queue">Add to Queue</button>
       </div>
     </div>
@@ -795,7 +761,7 @@ label {
         Show current times for cities around the world, one per row.
       </p>
       <div class="inline-row">
-        <button class="btn" id="btn-worldclock-toggle">Start World Clock</button>
+        <button class="btn" id="btn-worldclock-start">Start World Clock</button>
         <button class="btn" id="btn-worldclock-queue">Add to Queue</button>
         <button class="btn btn-sm" id="btn-worldclock-random">Randomize</button>
       </div>
@@ -819,10 +785,33 @@ label {
       </details>
     </div>
 
+    <!-- WEATHER -->
+    <div class="tab-pane" id="pane-weather">
+      <div class="row">
+        <div style="flex:3">
+          <label>City <span style="color:var(--text-dim);text-transform:none;font-size:10px;letter-spacing:0">&mdash; or use auto-detect</span></label>
+          <input type="text" id="weather-city" placeholder="e.g. New York">
+        </div>
+        <div style="flex:0 0 auto">
+          <label>&nbsp;</label>
+          <button class="btn" id="btn-weather-locate">Auto-Detect</button>
+        </div>
+      </div>
+      <div id="weather-status" style="color:var(--text-dim);font-size:11px;margin-top:8px"></div>
+      <div class="inline-row" style="margin-top:12px">
+        <button class="btn" id="btn-weather-show">Show Weather</button>
+        <button class="btn" id="btn-weather-queue">Add to Queue</button>
+        <div class="align-group" style="margin-left:auto">
+          <button class="align-btn active" data-val="F" id="weather-unit-f">&deg;F</button>
+          <button class="align-btn" data-val="C" id="weather-unit-c">&deg;C</button>
+        </div>
+      </div>
+    </div>
+
     <!-- SAVED -->
     <div class="tab-pane" id="pane-saved">
       <p style="color:var(--text-dim);margin-bottom:12px;line-height:1.5">
-        Click a saved message to load it into the text input. Messages persist across reloads.
+        Click a saved message to load it into the text input.
       </p>
       <ul class="saved-list" id="saved-list"></ul>
       <div class="inline-row" style="margin-top:12px">
@@ -833,19 +822,20 @@ label {
     <!-- QUEUE -->
     <div class="tab-pane" id="pane-queue">
       <p style="color:var(--text-dim);margin-bottom:12px;line-height:1.5">
-        Use the "Add to Queue" buttons on the Text, Clock, World Clock, and Weather tabs, or the "Queue" button on saved messages, to build your rotation.
+        Use the "Add to Queue" buttons on the Text, Clock, World Clock, and Weather tabs to build your rotation.
       </p>
       <ul class="queue-list" id="queue-list"></ul>
       <div class="inline-row" style="margin-top:12px">
         <button class="btn" id="btn-queue-start">Start Rotation</button>
         <label style="margin:0;display:flex;align-items:center;gap:6px">
           Dwell time
-          <input type="number" id="queue-dwell" value="8" min="3" max="120" style="width:50px">
+          <input type="number" id="queue-dwell" value="12" min="3" max="120" style="width:50px">
           <span style="color:var(--text-dim)">sec</span>
         </label>
         <button class="btn btn-sm btn-danger" id="btn-queue-clear" style="margin-left:auto">Clear All</button>
       </div>
     </div>
+
 
     <!-- API -->
     <div class="tab-pane" id="pane-api">
@@ -915,13 +905,13 @@ iframe.contentWindow.postMessage(
 </div>
 
 <script>
-// ═══════════════════════════════════════
-//  CHARACTER SET
-// ═══════════════════════════════════════
+
+window.__STANDALONE__ = true;
+
+// --- chars.js ---
 const CHARS = " ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789$.,:!?'-/+@#&\uE000\uE001\uE002\uE003\uE004\uE005\uE006";
 const CHAR_SET = new Set(CHARS);
 
-// Color tile mapping — PUA chars to color info
 const COLOR_TILES = {
   '\uE000': { name: 'Red',    upper: '#c0392b', lower: '#a93226', code: 'R' },
   '\uE001': { name: 'Orange', upper: '#d4782a', lower: '#ba6a25', code: 'O' },
@@ -931,6 +921,7 @@ const COLOR_TILES = {
   '\uE005': { name: 'Violet', upper: '#8e44ad', lower: '#7d3c98', code: 'V' },
   '\uE006': { name: 'White',  upper: '#d5d5d5', lower: '#c0c0c0', code: 'W' },
 };
+
 const CODE_TO_COLOR = {};
 for (const [ch, info] of Object.entries(COLOR_TILES)) {
   CODE_TO_COLOR[info.code] = ch;
@@ -942,24 +933,91 @@ function sanitize(c) {
   return CHAR_SET.has(c) ? c : ' ';
 }
 
-// ═══════════════════════════════════════
-//  AUDIO ENGINE — recorded Vestaboard sample
-//  Source: robonyong/react-split-flap-display (MIT)
-//  65ms recording of a single Vestaboard bit flip
-// ═══════════════════════════════════════
+function parseColorCodes(text) {
+  return text.replace(/\{([ROYGBVW])\}/gi, (_, code) => {
+    return CODE_TO_COLOR[code.toUpperCase()] || '';
+  });
+}
+
+function expandJustify(text, width) {
+  return text.split('\n').map(line => {
+    const idx = line.indexOf('{<>}');
+    if (idx === -1) return line;
+    const left = line.slice(0, idx);
+    const right = line.slice(idx + 4);
+    const gap = Math.max(1, width - left.length - right.length);
+    return left + ' '.repeat(gap) + right;
+  }).join('\n');
+}
+
+function expandTab(text, width) {
+  return text.split('\n').map(line => {
+    if (line.indexOf('{TAB}') === -1) return line;
+    const segments = line.split('{TAB}');
+    const n = segments.length;
+    const colWidth = Math.floor(width / n);
+    let result = '';
+    for (let i = 0; i < n; i++) {
+      const seg = segments[i];
+      if (i === n - 1) {
+        result += seg;
+      } else {
+        const target = colWidth * (i + 1);
+        const pad = Math.max(1, target - result.length - seg.length);
+        result += seg + ' '.repeat(pad);
+      }
+    }
+    return result;
+  }).join('\n');
+}
+
+function expandHR(text, width) {
+  return text.split('\n').map(line => {
+    if (line.trim() === '{HR}') return '-'.repeat(width);
+    return line;
+  }).join('\n');
+}
+
+// Line-alignment sentinels (private use area)
+const ALIGN_LEFT    = '\uE010';
+const ALIGN_CENTER  = '\uE011';
+const ALIGN_RIGHT   = '\uE012';
+
+function expandLineAlign(text) {
+  return text.split('\n').map(line => {
+    if (line.startsWith('{<}')) return ALIGN_LEFT + line.slice(3);
+    if (line.startsWith('{C}')) return ALIGN_CENTER + line.slice(3);
+    if (line.startsWith('{>}')) return ALIGN_RIGHT + line.slice(3);
+    return line;
+  }).join('\n');
+}
+
+const WMO_CODES = {
+  0: 'CLEAR SKY', 1: 'MAINLY CLEAR', 2: 'PARTLY CLOUDY', 3: 'OVERCAST',
+  45: 'FOG', 48: 'RIME FOG',
+  51: 'LIGHT DRIZZLE', 53: 'DRIZZLE', 55: 'HEAVY DRIZZLE',
+  56: 'FREEZING DRIZZLE', 57: 'FREEZING DRIZZLE',
+  61: 'LIGHT RAIN', 63: 'RAIN', 65: 'HEAVY RAIN',
+  66: 'FREEZING RAIN', 67: 'FREEZING RAIN',
+  71: 'LIGHT SNOW', 73: 'SNOW', 75: 'HEAVY SNOW',
+  77: 'SNOW GRAINS',
+  80: 'LIGHT SHOWERS', 81: 'SHOWERS', 82: 'HEAVY SHOWERS',
+  85: 'SNOW SHOWERS', 86: 'HEAVY SNOW SHOWERS',
+  95: 'THUNDERSTORM', 96: 'THUNDERSTORM/HAIL', 99: 'THUNDERSTORM/HAIL',
+};
+
+
+// --- audio.js ---
+// Module-private state
 let audioCtx = null;
 let soundEnabled = true;
-let flipBuffer = null; // decoded AudioBuffer from the sample
+let flipBuffer = null;
 
-// Base64-encoded MP3 of a real Vestaboard flip (~2.6KB)
-// Source: robonyong/react-split-flap-display (MIT License)
 const FLIP_B64 = '//uQxAAAAAAAAAAAAAAAAAAAAAAAWGluZwAAAA8AAAAEAAAKMABhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWGenp6enp6enp6enp6enp6enp6enp6enp6e5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5/////////////////////////////////8AAABQTEFNRTMuMTAwBLkAAAAAAAAAABUgJAR5QQAB4AAACjA//MFGAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA//vQxAAAB2gDW/QQACP1sqt/N5BAZmhFRWMCY2lLgQfNtBCD59YPn7QQ4OAg7ygYxO+CDsuf/g4CDpQH3//KHPiBxQEFAhrB8HwcOf/v/wfp4hol0d0dkUhwOaxFj7ncBpaDg480LAQiYIbAwDY6OgIkLiokrIYSAGAAC7kxjC1u4ggHgYHGdh8dSuUrChyqMpptgKQGqwY7LR39fmC3cUXZ6kwwJx4Hhl2qdtoy/rDGJp7QC1yVsSh5lcD01eOuzagqmV6wN45QlesFR5U0PQ1GqaItpJZ2r11KBuEP4SWrQyqvOc7hGsJ6W0delrVXfgeXKieCERaVRa3XnpVf3aw+xO35qtGbVJK4Nyg6izk9qJTkIn91atXLfd1qta/jhVlm5uxhYp+5Zc1VnKSdvyuH85Hf5qiqZ6u2qXKrUlWWW8quCv/+8LAMx/9QskR6akXFN0NgBBKjEZHYpXgQ6DBRUAZJBgafp0VlrB5VTEBFBVAtUEBK2lqxJ0oRCgkclMHsbrAbdm8WEYBL3CVy12RvDNyB6brsunfaZCJPUlsGsJiMmR0lyEkmQ7y6XOir0RVtqkYqR+dl9SO00atS+nlTsXLEflruxmzfltyOZ08rsTj/v3DUhlkbl8SiVeSyqexnJ6U4VZ2pK8IZv/lu7Lbs/Yr2atnWrHa1WtS/3PVexyfimu83LLFfOX38cqSN2rV6njHPs1bvLd+rSUkbtX72e+97fsTmdjC7T9s5Z6sRS/YF//8qQdZf/oGpmmrN3Ih0dUQi1lLqdTqlMAJhvTeJRUAbZEtVU4csM+CJhpoSZtmINgmLCgEMYwGMARo0BnzEqLKsDTkaACqAF5Aqmpc173fHRHLLjnAgW1Ns9nMAKmSWh1OpYWPnYGLFCxAu2hQhi+rA2Z7ZaxJMmHnRXYtIwhGQmcM5k9jHnG3eZy0T5bQy8xCB7YxjlNRJEwwWDRqIy2JPtALkyl/qSHqOU32nJiOpEVtBACumCrXxu1LtLWoXdcGQ4y2IU782H2jThw06ZECYIbhJNFpG8VIwSVWsdRF/ath9r1ymsRK1I6K5STFNA0TTxLZtDe5ExkhcBYoODRxLjvPBrb7rdq7rQ1Wps//7oMT6gB3hlV/5nBIE2jws/zWQCK2dL9Waz+mx5KZVa7SS7K5nSSe9G4i/col17Ovlz/////////+lx/fZmlxANn9ksOplm6iWNmeVRSRoZJFNyKR0061cRi0xCBN7xGS4eHDt5z0xm0hUHgUSYsSZcYnGZJE2QGgjPhUjjomBEGBIMwQMyQcwZARCyQCAmIsCdx/y7qlbbsrUqMgILSOLF1tM4ZYw9hq67rB8CESVQC41nNGcF+Y++1qUOfL1OKGPQGtURBEv1FFhYejTLnSuS7sQiLryOrWX+uN6YCXM0CAGUw1UlzuwFNRbO5Sv9E4NlWcqpYXbfiBmz2Hfjzf1bM5BMZnYjjVwitLI5F2nyiMjpLtO8kiiUZpoIdPk1IrWsqaVRbOtJ3vmpy9Xxs0eW+Y28FoLcRLY5KezLI3gm6WteuW3qaVTu7QUrswTHaSthEu3t/++//5/////////////vetc19WpfCn+1Sd5tHhSRigxRylYKV1KuYxEhgqBzGQbLlHIhICjsIhKYOCRggjmADAYhSgqGA4CCAEmEQyY4GpjUUmHg+zMwhYkhqZApdYRBGaMNVqHPaxUFWg6oDBrfGiFAEArvNu2dPFNVB1BKZCKeJfgCELUd1wF0r8CB0HRKMRAhQpS+TNhhlfDSngkcCuiy9fsDP0y4CpCsxrll1kxH1jUnv/7sMTiACTx5Vn5rQAE0bMpPzmQAAqOO7OvhGn5aTG3HgFfLTGIyp2H5UEf6TtOWETXWFmn2dqTz8+/kMvj2tUUWVM/rIX8UOWNBjL6/c7v26KCvwgmzqXUnaKXxGPQTKH9fp7IZmmsQc5sNsscR9aOQRiOfZ+UxG1TVquT3u9G6KVSykikhh67MW6S+wFpD7QK/FDFKKUNdeOngmijph61FGf5hL2mSr/5HPuXdm3JmYVWHW3X2RAkBZYs0gCXUcwLWgtAUsMqZYzXn+f5rS7gWiocgCg1AVBaDUVFhZmZihYWFa1VVVTpJFRUVFRU1rVVr4VaKKFhZmVa2KFhYWWoZmZr9mZhYWFhVVVVX///9VX+V/1r2//Zhb4ZmZmX2ZmZl/4ZmFXYNHfEoKgqCoNA1BUFlUxBTUUzLjEwMFVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVV//tQxOKD0OlZR/2EAAAAADSAAAAEVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVQ==';
 
 async function initAudio() {
   if (audioCtx) return;
   audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-
-  // Decode the embedded base64 MP3 into an AudioBuffer
   const binary = atob(FLIP_B64);
   const bytes = new Uint8Array(binary.length);
   for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
@@ -969,22 +1027,29 @@ async function initAudio() {
 function playClick() {
   if (!soundEnabled || !audioCtx || !flipBuffer) return;
   if (audioCtx.state === 'suspended') audioCtx.resume();
-
   const src = audioCtx.createBufferSource();
   src.buffer = flipBuffer;
-  // Pitch jitter: ±12% so rapid flips don't sound identical
   src.playbackRate.value = 0.88 + Math.random() * 0.24;
-
   const gain = audioCtx.createGain();
   gain.gain.value = 0.35 + Math.random() * 0.15;
-
   src.connect(gain).connect(audioCtx.destination);
   src.start();
 }
 
-// ═══════════════════════════════════════
-//  TILE
-// ═══════════════════════════════════════
+function setSoundEnabled(val) { soundEnabled = !!val; }
+function getSoundEnabled() { return soundEnabled; }
+
+function resumeAudioContext() {
+  if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume();
+}
+
+
+// --- board.js ---
+
+
+
+function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
+
 class Tile {
   constructor() {
     this.el = document.createElement('div');
@@ -1056,7 +1121,8 @@ class Tile {
     this.flipping = false;
   }
 
-  async flipTo(target, delay = 0) {
+  // NOTE: fullFlip is now a parameter, not a global
+  async flipTo(target, delay = 0, fullFlip = false) {
     target = sanitize(target);
     if (target === this.currentChar && !this.flipping) return;
 
@@ -1065,7 +1131,6 @@ class Tile {
     if (delay > 0) await sleep(delay);
     if (this._aborted) return;
 
-    // Build sequence of intermediate chars
     const curIdx = CHARS.indexOf(this.currentChar);
     const tgtIdx = CHARS.indexOf(target);
     if (curIdx === tgtIdx) return;
@@ -1074,10 +1139,8 @@ class Tile {
     let steps = [];
 
     if (fullFlip || dist <= 5) {
-      // Flip through every character in sequence
       for (let i = 1; i <= dist; i++) steps.push(CHARS[(curIdx + i) % CHARS.length]);
     } else {
-      // Pick 3-4 evenly spaced intermediates, then target
       const count = Math.min(4, dist - 1);
       for (let i = 1; i <= count; i++) {
         steps.push(CHARS[(curIdx + Math.floor(i * dist / (count + 1))) % CHARS.length]);
@@ -1100,7 +1163,6 @@ class Tile {
       const oldColor = COLOR_TILES[oldChar];
       const newColor = COLOR_TILES[newChar];
 
-      // Setup: upper shows new (hidden behind flap-top), flap-top shows old
       if (newColor) {
         this.upper.ch.textContent = '';
         this.upper.el.style.background = newColor.upper;
@@ -1109,7 +1171,6 @@ class Tile {
         this.upper.el.style.background = '';
       }
 
-      // Flap-top shows old character/color
       if (oldColor) {
         this.flapTop.ch.textContent = '';
         this.flapTop.el.style.background = oldColor.upper;
@@ -1118,7 +1179,6 @@ class Tile {
         this.flapTop.el.style.background = '';
       }
 
-      // Flap-bottom shows new character/color
       if (newColor) {
         this.flapBottom.ch.textContent = '';
         this.flapBottom.el.style.background = newColor.lower;
@@ -1127,7 +1187,6 @@ class Tile {
         this.flapBottom.el.style.background = '';
       }
 
-      // Phase 1: flip top away
       this.flapTop.el.classList.add('flip');
 
       let p1Done = false;
@@ -1137,13 +1196,11 @@ class Tile {
         p1Done = true;
         clearTimeout(p1Timer);
         this.flapTop.el.removeEventListener('animationend', onP1);
-        // Stale animation — just resolve without side effects
         if (this._flipGen !== gen) { resolve(); return; }
         this.flapTop.el.classList.remove('flip');
         this.flapTop.el.style.background = '';
         playClick();
 
-        // Phase 2: flip bottom in
         this.flapBottom.el.classList.add('flip');
 
         let p2Done = false;
@@ -1153,7 +1210,6 @@ class Tile {
           p2Done = true;
           clearTimeout(p2Timer);
           this.flapBottom.el.removeEventListener('animationend', onP2);
-          // Stale animation — just resolve without side effects
           if (this._flipGen !== gen) { resolve(); return; }
           this.flapBottom.el.classList.remove('flip');
           this.flapBottom.el.style.background = '';
@@ -1169,290 +1225,201 @@ class Tile {
   }
 }
 
-function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
-
-// ═══════════════════════════════════════
-//  BOARD
-// ═══════════════════════════════════════
-let rows = 6, cols = 22;
-let tiles = []; // 2D array [row][col]
-const boardEl = document.getElementById('board');
-
-function buildBoard() {
-  boardEl.innerHTML = '';
-  tiles = [];
-  boardEl.style.gridTemplateColumns = `repeat(${cols}, var(--tw))`;
-
-  for (let r = 0; r < rows; r++) {
-    tiles[r] = [];
-    for (let c = 0; c < cols; c++) {
-      const tile = new Tile();
-      tiles[r][c] = tile;
-      boardEl.appendChild(tile.el);
-    }
-  }
-  sizeTiles();
-}
-
-function sizeTiles() {
-  const isFullscreen = !!document.fullscreenElement;
-  const maxW = isFullscreen
-    ? window.innerWidth - 60
-    : Math.min(window.innerWidth - 80, 1160);
-  const maxH = isFullscreen
-    ? window.innerHeight - 40
-    : window.innerHeight * 0.55;
-
-  const gapTotal = (cols - 1) * 3;
-  let tw = Math.floor((maxW - gapTotal) / cols);
-  let th = Math.round(tw * 1.42);
-
-  // Check height constraint
-  const totalH = th * rows + (rows - 1) * 3;
-  if (totalH > maxH) {
-    th = Math.floor((maxH - (rows - 1) * 3) / rows);
-    tw = Math.round(th / 1.42);
+class Board {
+  constructor(boardEl, options = {}) {
+    this.boardEl = boardEl;
+    this.rows = options.rows || 6;
+    this.cols = options.cols || 22;
+    this.fullFlip = options.fullFlip !== undefined ? options.fullFlip : false;
+    this.tiles = [];
+    this.build();
   }
 
-  tw = Math.max(tw, 20);
-  th = Math.max(th, 28);
+  build() {
+    this.boardEl.innerHTML = '';
+    this.tiles = [];
+    this.boardEl.style.gridTemplateColumns = `repeat(${this.cols}, var(--tw))`;
 
-  document.documentElement.style.setProperty('--tw', tw + 'px');
-  document.documentElement.style.setProperty('--th', th + 'px');
-}
-
-// ═══════════════════════════════════════
-//  BOARD API
-// ═══════════════════════════════════════
-function abortAll() {
-  for (const row of tiles) for (const t of row) t.abort();
-}
-
-function setBoard(lines) {
-  // lines: array of strings, one per row
-  abortAll();
-  const promises = [];
-  for (let r = 0; r < rows; r++) {
-    const line = (lines[r] || '').toUpperCase();
-    for (let c = 0; c < cols; c++) {
-      const ch = c < line.length ? sanitize(line[c]) : ' ';
-      const delay = r * 18 + c * 28;
-      promises.push(tiles[r][c].flipTo(ch, delay));
-    }
-  }
-  return Promise.all(promises);
-}
-
-let alignH = 'left';
-let alignV = 'middle';
-let fullFlip = false;
-let fillColor = null;   // e.g. 'R', 'O', ... or null for none
-let borderColor = null;
-
-// Parse color codes like {R} {G} {B} etc. into PUA characters
-function parseColorCodes(text) {
-  return text.replace(/\{([ROYGBVW])\}/gi, (_, code) => {
-    return CODE_TO_COLOR[code.toUpperCase()] || '';
-  });
-}
-
-function expandJustify(text, width) {
-  return text.split('\n').map(line => {
-    const idx = line.indexOf('{<>}');
-    if (idx === -1) return line;
-    const left = line.slice(0, idx);
-    const right = line.slice(idx + 4);
-    const gap = Math.max(1, width - left.length - right.length);
-    return left + ' '.repeat(gap) + right;
-  }).join('\n');
-}
-
-function expandTab(text, width) {
-  return text.split('\n').map(line => {
-    if (line.indexOf('{TAB}') === -1) return line;
-    const segments = line.split('{TAB}');
-    const n = segments.length;
-    const colWidth = Math.floor(width / n);
-    let result = '';
-    for (let i = 0; i < n; i++) {
-      const seg = segments[i];
-      if (i === n - 1) {
-        result += seg;
-      } else {
-        const target = colWidth * (i + 1);
-        const pad = Math.max(1, target - result.length - seg.length);
-        result += seg + ' '.repeat(pad);
+    for (let r = 0; r < this.rows; r++) {
+      this.tiles[r] = [];
+      for (let c = 0; c < this.cols; c++) {
+        const tile = new Tile();
+        this.tiles[r][c] = tile;
+        this.boardEl.appendChild(tile.el);
       }
+    }
+    this.sizeTiles();
+  }
+
+  sizeTiles(isFullscreen) {
+    if (isFullscreen === undefined) isFullscreen = !!document.fullscreenElement;
+    const maxW = isFullscreen
+      ? window.innerWidth - 60
+      : Math.min(window.innerWidth - 80, 1160);
+    const maxH = isFullscreen
+      ? window.innerHeight - 40
+      : window.innerHeight * 0.55;
+
+    const gapTotal = (this.cols - 1) * 3;
+    let tw = Math.floor((maxW - gapTotal) / this.cols);
+    let th = Math.round(tw * 1.42);
+
+    const totalH = th * this.rows + (this.rows - 1) * 3;
+    if (totalH > maxH) {
+      th = Math.floor((maxH - (this.rows - 1) * 3) / this.rows);
+      tw = Math.round(th / 1.42);
+    }
+
+    tw = Math.max(tw, 20);
+    th = Math.max(th, 28);
+
+    document.documentElement.style.setProperty('--tw', tw + 'px');
+    document.documentElement.style.setProperty('--th', th + 'px');
+  }
+
+  abortAll() {
+    for (const row of this.tiles) for (const t of row) t.abort();
+  }
+
+  setBoard(lines) {
+    this.abortAll();
+    const promises = [];
+    for (let r = 0; r < this.rows; r++) {
+      const line = (lines[r] || '').toUpperCase();
+      for (let c = 0; c < this.cols; c++) {
+        const ch = c < line.length ? sanitize(line[c]) : ' ';
+        const delay = r * 18 + c * 28;
+        promises.push(this.tiles[r][c].flipTo(ch, delay, this.fullFlip));
+      }
+    }
+    return Promise.all(promises);
+  }
+
+  setBoardText(text, hAlign = 'center', vAlign = 'middle', fill = null, border = null) {
+    let padded;
+
+    const applyFillToLines = (lines, width) => {
+      const fillChar = CODE_TO_COLOR[fill];
+      return lines.map(line => {
+        const content = line.replace(/\s+$/, '');
+        const contentStart = content.search(/\S/);
+        if (contentStart === -1) return fillChar.repeat(line.length > 0 ? line.length : width);
+        const leading = fillChar.repeat(contentStart);
+        const trailing = fillChar.repeat(Math.max(0, line.length - content.length));
+        return leading + content.slice(contentStart) + trailing;
+      });
+    };
+
+    if (border) {
+      const borderChar = CODE_TO_COLOR[border];
+      const innerCols = this.cols - 2;
+      const innerRows = this.rows - 2;
+      let innerLines = Board.layoutLines(text, innerCols, innerRows, hAlign, vAlign);
+      if (fill) innerLines = applyFillToLines(innerLines, innerCols);
+      padded = [];
+      padded.push(borderChar.repeat(this.cols));
+      for (const line of innerLines) padded.push(borderChar + line + borderChar);
+      padded.push(borderChar.repeat(this.cols));
+    } else {
+      padded = Board.layoutLines(text, this.cols, this.rows, hAlign, vAlign);
+      if (fill) padded = applyFillToLines(padded, this.cols);
+    }
+
+    return this.setBoard(padded);
+  }
+
+  clearBoard() {
+    return this.setBoard(Array(this.rows).fill(''));
+  }
+
+  forceResetAll() {
+    for (const row of this.tiles) for (const t of row) t.forceReset();
+  }
+
+  resize(rows, cols) {
+    this.rows = rows;
+    this.cols = cols;
+    this.build();
+  }
+
+  static wordWrap(text, width) {
+    const paragraphs = text.split('\n');
+    const result = [];
+    for (const para of paragraphs) {
+      if (para.trim() === '') { result.push(''); continue; }
+      if (para.length <= width) { result.push(para); continue; }
+      const words = para.split(/\s+/).filter(Boolean);
+      let line = '';
+      for (const word of words) {
+        if (word.length > width) {
+          if (line) { result.push(line); line = ''; }
+          for (let i = 0; i < word.length; i += width) {
+            result.push(word.slice(i, i + width));
+          }
+          continue;
+        }
+        if (line && line.length + 1 + word.length > width) {
+          result.push(line);
+          line = word;
+        } else {
+          line = line ? line + ' ' + word : word;
+        }
+      }
+      if (line) result.push(line);
     }
     return result;
-  }).join('\n');
-}
-
-function expandHR(text, width) {
-  return text.split('\n').map(line => {
-    if (line.trim() === '{HR}') return '-'.repeat(width);
-    return line;
-  }).join('\n');
-}
-
-const ALIGN_LEFT   = '\uE010';
-const ALIGN_CENTER = '\uE011';
-const ALIGN_RIGHT  = '\uE012';
-
-function expandLineAlign(text) {
-  return text.split('\n').map(line => {
-    if (line.startsWith('{<}')) return ALIGN_LEFT + line.slice(3);
-    if (line.startsWith('{C}')) return ALIGN_CENTER + line.slice(3);
-    if (line.startsWith('{>}')) return ALIGN_RIGHT + line.slice(3);
-    return line;
-  }).join('\n');
-}
-
-function layoutLines(text, numCols, numRows, hAlign, vAlign) {
-  text = parseColorCodes(text);
-  text = expandHR(text, numCols);
-  text = expandTab(text, numCols);
-  text = expandJustify(text, numCols);
-  text = expandLineAlign(text);
-  const lines = wordWrap(text.toUpperCase(), numCols);
-
-  const aligned = lines.map(line => {
-    let lineAlign = hAlign;
-    if (line.charAt(0) === ALIGN_LEFT)   { line = line.slice(1); lineAlign = 'left'; }
-    else if (line.charAt(0) === ALIGN_CENTER) { line = line.slice(1); lineAlign = 'center'; }
-    else if (line.charAt(0) === ALIGN_RIGHT)  { line = line.slice(1); lineAlign = 'right'; }
-    line = line.trimStart();
-    if (line.length >= numCols) return line.slice(0, numCols);
-    const gap = numCols - line.length;
-    if (lineAlign === 'center') {
-      const left = Math.floor(gap / 2);
-      return ' '.repeat(left) + line + ' '.repeat(gap - left);
-    } else if (lineAlign === 'right') {
-      return ' '.repeat(gap) + line;
-    }
-    return line + ' '.repeat(gap);
-  });
-
-  let padTop = 0;
-  if (aligned.length < numRows) {
-    if (vAlign === 'middle') padTop = Math.floor((numRows - aligned.length) / 2);
-    else if (vAlign === 'bottom') padTop = numRows - aligned.length;
   }
 
-  const result = [];
-  for (let i = 0; i < numRows; i++) {
-    let line = i >= padTop && i < padTop + aligned.length ? aligned[i - padTop] : '';
-    if (line.length < numCols) line += ' '.repeat(numCols - line.length);
-    result.push(line);
-  }
-  return result;
-}
+  static layoutLines(text, numCols, numRows, hAlign, vAlign) {
+    text = parseColorCodes(text);
+    text = expandHR(text, numCols);
+    text = expandTab(text, numCols);
+    text = expandJustify(text, numCols);
+    text = expandLineAlign(text);
+    const lines = Board.wordWrap(text.toUpperCase(), numCols);
 
-function setBoardText(text, hAlign, vAlign, fill, border) {
-  hAlign = hAlign || alignH;
-  vAlign = vAlign || alignV;
-  fill = fill !== undefined ? fill : fillColor;
-  border = border !== undefined ? border : borderColor;
-
-  let padded;
-
-  function applyFillToLines(lines, width) {
-    const fillChar = CODE_TO_COLOR[fill];
-    return lines.map(line => {
-      const content = line.replace(/\s+$/, '');
-      const contentStart = content.search(/\S/);
-      if (contentStart === -1) return fillChar.repeat(line.length > 0 ? line.length : width);
-      const leading = fillChar.repeat(contentStart);
-      const trailing = fillChar.repeat(Math.max(0, line.length - content.length));
-      return leading + content.slice(contentStart) + trailing;
+    const aligned = lines.map(line => {
+      let lineAlign = hAlign;
+      if (line.charAt(0) === ALIGN_LEFT)   { line = line.slice(1); lineAlign = 'left'; }
+      else if (line.charAt(0) === ALIGN_CENTER) { line = line.slice(1); lineAlign = 'center'; }
+      else if (line.charAt(0) === ALIGN_RIGHT)  { line = line.slice(1); lineAlign = 'right'; }
+      line = line.trimStart();
+      if (line.length >= numCols) return line.slice(0, numCols);
+      const gap = numCols - line.length;
+      if (lineAlign === 'center') {
+        const left = Math.floor(gap / 2);
+        return ' '.repeat(left) + line + ' '.repeat(gap - left);
+      } else if (lineAlign === 'right') {
+        return ' '.repeat(gap) + line;
+      }
+      return line + ' '.repeat(gap);
     });
-  }
 
-  if (border) {
-    const borderChar = CODE_TO_COLOR[border];
-    const innerCols = cols - 2;
-    const innerRows = rows - 2;
-    let innerLines = layoutLines(text, innerCols, innerRows, hAlign, vAlign);
-    // Apply fill to inner lines before wrapping with border
-    if (fill) innerLines = applyFillToLines(innerLines, innerCols);
-    padded = [];
-    padded.push(borderChar.repeat(cols));
-    for (const line of innerLines) padded.push(borderChar + line + borderChar);
-    padded.push(borderChar.repeat(cols));
-  } else {
-    padded = layoutLines(text, cols, rows, hAlign, vAlign);
-    if (fill) padded = applyFillToLines(padded, cols);
-  }
-
-  return setBoard(padded);
-}
-
-function clearBoard() {
-  return setBoard(Array(rows).fill(''));
-}
-
-function wordWrap(text, width) {
-  // Split on explicit newlines first
-  const paragraphs = text.split('\n');
-  const result = [];
-
-  for (const para of paragraphs) {
-    if (para.trim() === '') { result.push(''); continue; }
-    // If the line already fits, preserve it as-is (keeps spacing intact)
-    if (para.length <= width) { result.push(para); continue; }
-    const words = para.split(/\s+/).filter(Boolean);
-    let line = '';
-
-    for (const word of words) {
-      if (word.length > width) {
-        // Break long word
-        if (line) { result.push(line); line = ''; }
-        for (let i = 0; i < word.length; i += width) {
-          result.push(word.slice(i, i + width));
-        }
-        continue;
-      }
-      if (line && line.length + 1 + word.length > width) {
-        result.push(line);
-        line = word;
-      } else {
-        line = line ? line + ' ' + word : word;
-      }
+    let padTop = 0;
+    if (aligned.length < numRows) {
+      if (vAlign === 'middle') padTop = Math.floor((numRows - aligned.length) / 2);
+      else if (vAlign === 'bottom') padTop = numRows - aligned.length;
     }
-    if (line) result.push(line);
+
+    const result = [];
+    for (let i = 0; i < numRows; i++) {
+      let line = i >= padTop && i < padTop + aligned.length ? aligned[i - padTop] : '';
+      if (line.length < numCols) line += ' '.repeat(numCols - line.length);
+      result.push(line);
+    }
+    return result;
   }
-
-  return result;
 }
 
-// ═══════════════════════════════════════
-//  CLOCK MODE
-// ═══════════════════════════════════════
-let clockInterval = null;
-let is24h = false;
-let clockTimezone = '';
+// --- Formatting helpers used by both display and admin ---
 
-function startClock() {
-  stopQueue();
-  stopWorldClock();
-  updateClock();
-  clockInterval = setInterval(updateClock, 1000);
-  document.getElementById('btn-clock-toggle').textContent = 'Stop Clock';
-}
-
-function stopClock() {
-  if (clockInterval) { clearInterval(clockInterval); clockInterval = null; }
-  document.getElementById('btn-clock-toggle').textContent = 'Start Clock';
-}
-
-let lastClockStr = '';
-function updateClock() {
+function formatClockLines(rows, cols, is24h, timezone) {
   const now = new Date();
   let h, m, dayIdx, monthIdx, date, year;
 
-  if (clockTimezone) {
+  if (timezone) {
     try {
-      const opts = { timeZone: clockTimezone, hour12: false };
+      const opts = { timeZone: timezone, hour12: false };
       const parts = new Intl.DateTimeFormat('en-US', {
         ...opts, hour: 'numeric', minute: '2-digit',
         weekday: 'long', month: 'short', day: 'numeric', year: 'numeric'
@@ -1469,7 +1436,6 @@ function updateClock() {
       date = parseInt(get('day')) || 1;
       year = parseInt(get('year')) || now.getFullYear();
     } catch {
-      // Invalid timezone, fall back to local
       h = now.getHours(); m = now.getMinutes();
       dayIdx = now.getDay(); monthIdx = now.getMonth();
       date = now.getDate(); year = now.getFullYear();
@@ -1490,17 +1456,12 @@ function updateClock() {
   const dateStr = days[dayIdx] + '  ' + months[monthIdx] + ' ' + date;
   const yearStr = String(year);
 
-  const clockStr = timeStr + '|' + dateStr + '|' + yearStr;
-  if (clockStr === lastClockStr) return;
-  lastClockStr = clockStr;
-
-  // Build centered lines
-  const lines = [];
   const center = (s) => {
     const pad = Math.max(0, Math.floor((cols - s.length) / 2));
     return ' '.repeat(pad) + s;
   };
 
+  const lines = [];
   if (rows >= 6) {
     lines.push('');
     lines.push(center(timeStr));
@@ -1516,254 +1477,668 @@ function updateClock() {
     lines.push(center(timeStr + '  ' + dateStr));
   }
 
-  return setBoard(lines);
+  return lines;
 }
 
-// ═══════════════════════════════════════
-//  WORLD CLOCK MODE
-// ═══════════════════════════════════════
-let worldClockCities = [];
-let worldClockInterval = null;
-let lastWorldClockStr = '';
-let customWorldCities = []; // array of { city, tz }
-
-function allWorldClockCities() {
-  return [...WORLD_CITIES, ...customWorldCities];
-}
-
-function pickRandomWorldClockCities() {
-  const shuffled = allWorldClockCities().sort(() => Math.random() - 0.5);
-  worldClockCities = shuffled.slice(0, rows);
-}
-
-function updateWorldClock() {
+function formatWorldClockLines(rows, cols, cities, is24h) {
   const now = new Date();
+  const count = Math.min(cities.length, rows);
   const lines = [];
-  const count = Math.min(worldClockCities.length, rows);
 
-  const formatted = [];
   for (let i = 0; i < count; i++) {
-    const c = worldClockCities[i];
+    const c = cities[i];
     const fmt = new Intl.DateTimeFormat('en-US', {
-      timeZone: c.tz,
+      timeZone: c.tz || c.timezone,
       hour: 'numeric', minute: '2-digit',
       hour12: !is24h,
     });
     const timeStr = fmt.format(now).toUpperCase();
-    const name = c.city.split(',')[0].toUpperCase();
-    formatted.push({ name, time: timeStr });
+    const name = (c.city || c.name || '').split(',')[0].toUpperCase();
+    const gap = Math.max(1, cols - name.length - timeStr.length);
+    lines.push(name + ' '.repeat(gap) + timeStr);
   }
 
-  const sig = formatted.map(f => f.name + f.time).join('|');
-  if (sig === lastWorldClockStr) return;
-  lastWorldClockStr = sig;
-
-  for (const { name, time } of formatted) {
-    const gap = Math.max(1, cols - name.length - time.length);
-    lines.push(name + ' '.repeat(gap) + time);
-  }
-
-  return setBoard(lines);
+  return lines;
 }
 
-function startWorldClock() {
-  stopQueue();
-  stopClock();
-  if (worldClockCities.length === 0) pickRandomWorldClockCities();
-  lastWorldClockStr = '';
-  updateWorldClock();
-  worldClockInterval = setInterval(updateWorldClock, 1000);
-  document.getElementById('btn-worldclock-toggle').textContent = 'Stop World Clock';
-}
+function formatWeatherLines(rows, cols, data, cityName, unit) {
+  const cur = data.current;
+  const daily = data.daily;
+  const temp = Math.round(cur.temperature_2m);
+  const hi = Math.round(daily.temperature_2m_max[0]);
+  const lo = Math.round(daily.temperature_2m_min[0]);
+  const wind = Math.round(cur.wind_speed_10m);
+  const humidity = Math.round(cur.relative_humidity_2m);
+  const condition = WMO_CODES[cur.weather_code] || 'UNKNOWN';
+  const unitLabel = unit === 'C' ? 'C' : 'F';
+  const windLabel = unit === 'C' ? 'KMH' : 'MPH';
 
-function stopWorldClock() {
-  if (worldClockInterval) { clearInterval(worldClockInterval); worldClockInterval = null; }
-  document.getElementById('btn-worldclock-toggle').textContent = 'Start World Clock';
-}
-
-function renderWorldClockCityPicker() {
-  const container = document.getElementById('worldclock-city-list');
-  container.innerHTML = '';
-  allWorldClockCities().forEach((c) => {
-    const isCustom = customWorldCities.some(cc => cc.city === c.city && cc.tz === c.tz);
-    const wrapper = document.createElement('div');
-    wrapper.style.cssText = 'display:flex;align-items:center;gap:6px';
-    const label = document.createElement('label');
-    label.style.cssText = 'display:flex;align-items:center;gap:6px;cursor:pointer;flex:1';
-    const cb = document.createElement('input');
-    cb.type = 'checkbox';
-    cb.checked = worldClockCities.some(wc => wc.city === c.city);
-    cb.addEventListener('change', () => {
-      if (cb.checked) {
-        if (!worldClockCities.some(wc => wc.city === c.city)) worldClockCities.push(c);
-      } else {
-        worldClockCities = worldClockCities.filter(wc => wc.city !== c.city);
-      }
-      persistState();
-      if (worldClockInterval) { lastWorldClockStr = ''; updateWorldClock(); }
-    });
-    label.appendChild(cb);
-    label.appendChild(document.createTextNode(c.city));
-    wrapper.appendChild(label);
-    if (isCustom) {
-      const removeBtn = document.createElement('span');
-      removeBtn.textContent = '\u00d7';
-      removeBtn.title = 'Remove custom city';
-      removeBtn.style.cssText = 'cursor:pointer;color:var(--text-dim);font-size:14px;padding:0 4px';
-      removeBtn.addEventListener('mouseover', () => { removeBtn.style.color = 'var(--danger)'; });
-      removeBtn.addEventListener('mouseout', () => { removeBtn.style.color = 'var(--text-dim)'; });
-      removeBtn.addEventListener('click', () => {
-        customWorldCities = customWorldCities.filter(cc => cc.city !== c.city || cc.tz !== c.tz);
-        worldClockCities = worldClockCities.filter(wc => wc.city !== c.city);
-        persistState();
-        renderWorldClockCityPicker();
-        if (worldClockInterval) { lastWorldClockStr = ''; updateWorldClock(); }
-      });
-      wrapper.appendChild(removeBtn);
-    }
-    container.appendChild(wrapper);
-  });
-}
-
-// ═══════════════════════════════════════
-//  MESSAGE QUEUE
-// ═══════════════════════════════════════
-let queue = []; // Array of { type: 'text'|'clock'|'weather'|'saved', text?, name? }
-let queueIdx = 0;
-let queueTimeout = null;
-
-// Normalize legacy plain-string queue entries
-function normalizeQueueItem(item) {
-  if (typeof item === 'string') return { type: 'text', text: item };
-  return item;
-}
-
-function addToQueue(item) {
-  queue.push(item);
-  renderQueue();
-  persistState();
-}
-
-function removeFromQueue(idx) {
-  queue.splice(idx, 1);
-  if (queueIdx >= queue.length) queueIdx = 0;
-  renderQueue();
-  persistState();
-}
-
-function queueItemLabel(item) {
-  item = normalizeQueueItem(item);
-  if (item.type === 'clock') return '\u23F0 Clock';
-  if (item.type === 'worldclock') return '\uD83C\uDF0D World Clock';
-  if (item.type === 'weather') return '\u2601 Weather';
-  if (item.type === 'saved') return '\u2605 ' + (item.name || 'Saved');
-  return item.text || '';
-}
-
-function renderQueue() {
-  const list = document.getElementById('queue-list');
-  list.innerHTML = '';
-  queue.forEach((raw, i) => {
-    const item = normalizeQueueItem(raw);
-    const li = document.createElement('li');
-    li.className = 'queue-item' + (queueTimeout !== null && i === queueIdx ? ' active' : '');
-    li.draggable = true;
-    li.dataset.idx = i;
-    const label = queueItemLabel(item);
-    li.innerHTML = `<span class="idx">${i + 1}</span><span class="msg">${escHtml(label)}</span><span class="remove" data-idx="${i}">&times;</span>`;
-    list.appendChild(li);
-  });
-}
-
-function startQueue() {
-  if (queue.length === 0) return;
-  stopClock();
-  stopWorldClock();
-  stopWeatherAutoRefresh();
-  queueIdx = 0;
-  queueTimeout = -1; // sentinel: queue is active
-  renderQueue();
-  showQueueMessage().then(() => scheduleNextQueueItem());
-  document.getElementById('btn-queue-start').textContent = 'Stop Rotation';
-}
-
-function scheduleNextQueueItem() {
-  if (queueTimeout === null) return; // stopped
-  const sec = parseInt(document.getElementById('queue-dwell').value) || 8;
-  queueTimeout = setTimeout(async () => {
-    queueIdx = (queueIdx + 1) % queue.length;
-    renderQueue();
-    await showQueueMessage();
-    scheduleNextQueueItem();
-  }, sec * 1000);
-}
-
-function stopQueue() {
-  if (queueTimeout !== null) { clearTimeout(queueTimeout); queueTimeout = null; }
-  renderQueue();
-  document.getElementById('btn-queue-start').textContent = 'Start Rotation';
-}
-
-let _queueBusy = false;
-async function showQueueMessage() {
-  if (queue.length === 0 || _queueBusy) return;
-  const item = normalizeQueueItem(queue[queueIdx]);
-  if (item.type === 'clock') {
-    lastClockStr = '';
-    await updateClock();
-  } else if (item.type === 'worldclock') {
-    if (worldClockCities.length === 0) pickRandomWorldClockCities();
-    lastWorldClockStr = '';
-    await updateWorldClock();
-  } else if (item.type === 'weather') {
-    _queueBusy = true;
-    try { await showWeather(); } finally { _queueBusy = false; }
+  const lines = [];
+  if (rows >= 6) {
+    lines.push(cityName.toUpperCase());
+    lines.push(temp + '.' + unitLabel);
+    lines.push(condition);
+    lines.push('HI ' + hi + '   LO ' + lo);
+    lines.push('WIND ' + wind + ' ' + windLabel);
+    lines.push('HUMIDITY ' + humidity);
+  } else if (rows >= 3) {
+    lines.push(temp + '.' + unitLabel + '  ' + condition);
+    lines.push('HI ' + hi + '  LO ' + lo);
+    lines.push('WIND ' + wind + ' ' + windLabel + '  HUM ' + humidity);
   } else {
-    // text or saved
-    await setBoardText(item.text || '', item.alignH, item.alignV, item.fillColor || null, item.borderColor || null);
+    lines.push(temp + '.' + unitLabel + ' ' + condition);
+  }
+
+  return lines;
+}
+
+
+// --- storage-local.js ---
+// StorageLocal — localStorage backend for standalone mode
+// Mirrors the StorageAPI interface but stores everything in the browser.
+// Display commands are dispatched via a callback to drive the local board.
+
+const STORAGE_KEY = 'splitflap_state';
+
+const WORLD_CITIES = [
+  { city: 'Tokyo, Japan', timezone: 'Asia/Tokyo' },
+  { city: 'London, England', timezone: 'Europe/London' },
+  { city: 'New York, USA', timezone: 'America/New_York' },
+  { city: 'Paris, France', timezone: 'Europe/Paris' },
+  { city: 'Sydney, Australia', timezone: 'Australia/Sydney' },
+  { city: 'Dubai, UAE', timezone: 'Asia/Dubai' },
+  { city: 'Singapore', timezone: 'Asia/Singapore' },
+  { city: 'Rome, Italy', timezone: 'Europe/Rome' },
+  { city: 'Cairo, Egypt', timezone: 'Africa/Cairo' },
+  { city: 'Mumbai, India', timezone: 'Asia/Kolkata' },
+  { city: 'Toronto, Canada', timezone: 'America/Toronto' },
+  { city: 'Berlin, Germany', timezone: 'Europe/Berlin' },
+  { city: 'São Paulo, Brazil', timezone: 'America/Sao_Paulo' },
+  { city: 'Mexico City, Mexico', timezone: 'America/Mexico_City' },
+  { city: 'Seoul, South Korea', timezone: 'Asia/Seoul' },
+  { city: 'Istanbul, Turkey', timezone: 'Europe/Istanbul' },
+  { city: 'Bangkok, Thailand', timezone: 'Asia/Bangkok' },
+  { city: 'Buenos Aires, Argentina', timezone: 'America/Argentina/Buenos_Aires' },
+  { city: 'Nairobi, Kenya', timezone: 'Africa/Nairobi' },
+  { city: 'Reykjavik, Iceland', timezone: 'Atlantic/Reykjavik' },
+];
+
+class StorageLocal {
+  constructor(onDisplayAction) {
+    this._onDisplay = onDisplayAction;
+    this._nextId = 1;
+    this._queueTimeout = null;
+    this._queueIdx = 0;
+    this._queueBusy = false;
+    this._state = this._load();
+  }
+
+  // --- Persistence ---
+
+  _load() {
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if (raw) {
+        const s = JSON.parse(raw);
+        this._nextId = s._nextId || 100;
+        const defaults = this._defaults();
+        // Migrate from old standalone format if needed
+        const migrated = this._migrate(s, defaults);
+        return migrated;
+      }
+    } catch {}
+    return this._defaults();
+  }
+
+  _migrate(s, defaults) {
+    // Ensure all top-level keys exist
+    if (!s.settings) {
+      // Old format stored settings as top-level keys (rows, cols, etc.)
+      s.settings = { ...defaults.settings };
+      for (const key of Object.keys(defaults.settings)) {
+        if (s[key] !== undefined) s.settings[key] = String(s[key]);
+      }
+      if (s.soundEnabled !== undefined) s.settings.soundEnabled = String(s.soundEnabled);
+      if (s.is24h !== undefined) s.settings.is24h = String(s.is24h);
+      if (s.fullFlip !== undefined) s.settings.fullFlip = String(s.fullFlip);
+      if (s.clockTimezone !== undefined) s.settings.clockTimezone = s.clockTimezone;
+      if (s.weather) {
+        if (s.weather.lat != null) s.settings.weatherLat = String(s.weather.lat);
+        if (s.weather.lon != null) s.settings.weatherLon = String(s.weather.lon);
+        if (s.weather.city) s.settings.weatherCity = s.weather.city;
+        if (s.weather.unit) s.settings.weatherUnit = s.weather.unit;
+      }
+    }
+
+    // Ensure queueItems exists — migrate from old 'queue' array
+    if (!s.queueItems) {
+      if (Array.isArray(s.queue)) {
+        s.queueItems = s.queue.map((item, idx) => {
+          const id = this._nextId++;
+          if (typeof item === 'object' && item.type) {
+            // Old format: { type: 'clock' } or { type: 'saved', name, text, ... }
+            const type = item.type === 'saved' ? 'text' : item.type;
+            const config = {};
+            if (item.name) config.name = item.name;
+            if (item.text) config.text = item.text;
+            if (item.alignH) config.alignH = item.alignH;
+            if (item.alignV) config.alignV = item.alignV;
+            if (item.fillColor) config.fillColor = item.fillColor;
+            if (item.borderColor) config.borderColor = item.borderColor;
+            return { id, position: idx + 1, type, config: JSON.stringify(config) };
+          }
+          return { id, position: idx + 1, type: 'text', config: '{}' };
+        });
+      } else {
+        s.queueItems = [...defaults.queueItems];
+      }
+    }
+
+    // Ensure savedMessages exists and has correct shape
+    if (!s.savedMessages) {
+      s.savedMessages = [...defaults.savedMessages];
+    } else {
+      // Migrate camelCase to snake_case if needed
+      s.savedMessages = s.savedMessages.map(m => {
+        if (!m.id) m.id = this._nextId++;
+        if (m.alignH !== undefined && m.align_h === undefined) m.align_h = m.alignH;
+        if (m.alignV !== undefined && m.align_v === undefined) m.align_v = m.alignV;
+        if (m.fillColor !== undefined && m.fill_color === undefined) m.fill_color = m.fillColor;
+        if (m.borderColor !== undefined && m.border_color === undefined) m.border_color = m.borderColor;
+        if (!m.align_h) m.align_h = 'center';
+        if (!m.align_v) m.align_v = 'middle';
+        return m;
+      });
+    }
+
+    // Ensure worldClockCities exists
+    if (!s.worldClockCities) {
+      s.worldClockCities = [...defaults.worldClockCities];
+    }
+
+    // Clean up old top-level keys
+    delete s.queue;
+    delete s.weather;
+
+    return s;
+  }
+
+  _save() {
+    this._state._nextId = this._nextId;
+    try { localStorage.setItem(STORAGE_KEY, JSON.stringify(this._state)); } catch {}
+  }
+
+  _defaults() {
+    const cities = WORLD_CITIES.map((c, i) => ({
+      id: i + 1, city: c.city, timezone: c.timezone, is_custom: 0, is_selected: 1,
+    }));
+    this._nextId = cities.length + 1;
+
+    const savedMessages = [
+      { id: this._nextId++, name: 'Welcome to Flippy Board', text: 'Welcome to\nFlippy Board', align_h: 'center', align_v: 'middle', fill_color: null, border_color: null },
+      { id: this._nextId++, name: 'Menu', text: 'Burger{<>}$14\nCheesburger{<>}$15\nFries{<>}$4\nMilkshake{<>}$5\nPop{<>}$2', align_h: 'left', align_v: 'top', fill_color: null, border_color: null },
+    ];
+
+    const queueItems = [
+      { id: this._nextId++, position: 1, type: 'text', config: JSON.stringify({ name: 'Welcome to Flippy Board', text: 'Welcome to\nFlippy Board' }) },
+      { id: this._nextId++, position: 2, type: 'text', config: JSON.stringify({ name: 'Menu', text: 'Burger{<>}$14\nCheesburger{<>}$15\nFries{<>}$4\nMilkshake{<>}$5\nPop{<>}$2', alignH: 'left', alignV: 'top' }) },
+      { id: this._nextId++, position: 3, type: 'clock', config: '{}' },
+      { id: this._nextId++, position: 4, type: 'worldclock', config: '{}' },
+      { id: this._nextId++, position: 5, type: 'weather', config: '{}' },
+    ];
+
+    return {
+      settings: {
+        rows: '6', cols: '22', is24h: 'false', fullFlip: 'true',
+        soundEnabled: 'true', queueDwellSec: '12',
+        weatherUnit: 'F', weatherLat: 'null', weatherLon: 'null', weatherCity: '',
+        weatherAutoRefresh: 'false', weatherRefreshMin: '15',
+        clockTimezone: '', alignH: 'center', alignV: 'middle',
+        fillColor: '', borderColor: '',
+      },
+      savedMessages,
+      queueItems,
+      worldClockCities: cities,
+    };
+  }
+
+  // --- Settings ---
+
+  async getSettings() {
+    return { ...this._state.settings };
+  }
+
+  async updateSettings(patch) {
+    Object.assign(this._state.settings, patch);
+    this._save();
+    this._onDisplay({ action: 'updateSettings', settings: { ...this._state.settings } });
+    return { ...this._state.settings };
+  }
+
+  // --- Saved Messages ---
+
+  async getMessages() {
+    return [...this._state.savedMessages];
+  }
+
+  async addMessage({ name, text, alignH, alignV, fillColor, borderColor }) {
+    const id = this._nextId++;
+    this._state.savedMessages.push({
+      id, name, text,
+      align_h: alignH || 'center',
+      align_v: alignV || 'middle',
+      fill_color: fillColor || null,
+      border_color: borderColor || null,
+    });
+    this._save();
+    return { id };
+  }
+
+  async deleteMessage(id) {
+    this._state.savedMessages = this._state.savedMessages.filter(m => m.id !== id);
+    this._save();
+    return { ok: true };
+  }
+
+  async clearMessages() {
+    this._state.savedMessages = [];
+    this._save();
+    return { ok: true };
+  }
+
+  // --- Queue Items ---
+
+  async getQueueItems() {
+    return [...this._state.queueItems];
+  }
+
+  async addQueueItem({ type, config }) {
+    const id = this._nextId++;
+    const maxPos = this._state.queueItems.reduce((m, i) => Math.max(m, i.position), 0);
+    this._state.queueItems.push({ id, position: maxPos + 1, type, config: config || '{}' });
+    this._save();
+    return { id };
+  }
+
+  async deleteQueueItem(id) {
+    this._state.queueItems = this._state.queueItems.filter(i => i.id !== id);
+    this._state.queueItems.forEach((item, idx) => { item.position = idx + 1; });
+    this._save();
+    return { ok: true };
+  }
+
+  async clearQueue() {
+    this._stopLocalQueue();
+    this._state.queueItems = [];
+    this._save();
+    return { ok: true };
+  }
+
+  async reorderQueue(ids) {
+    const byId = new Map(this._state.queueItems.map(i => [i.id, i]));
+    this._state.queueItems = ids.map((id, idx) => {
+      const item = byId.get(id);
+      if (item) item.position = idx + 1;
+      return item;
+    }).filter(Boolean);
+    this._save();
+    return { ok: true };
+  }
+
+  // --- Queue Control (local timer) ---
+
+  async startQueue() {
+    const items = this._state.queueItems;
+    if (items.length === 0) return { ok: true };
+    this._queueIdx = 0;
+    this._queueTimeout = -1; // sentinel: active
+    this._onDisplay({ action: 'queueStatus', running: true, currentIndex: 0 });
+    await this._showQueueItem();
+    this._scheduleNextQueueItem();
+    return { ok: true };
+  }
+
+  async stopQueue() {
+    this._stopLocalQueue();
+    return { ok: true };
+  }
+
+  _stopLocalQueue() {
+    if (this._queueTimeout !== null) { clearTimeout(this._queueTimeout); this._queueTimeout = null; }
+    this._onDisplay({ action: 'queueStatus', running: false, currentIndex: 0 });
+  }
+
+  _scheduleNextQueueItem() {
+    if (this._queueTimeout === null) return;
+    const sec = parseInt(this._state.settings.queueDwellSec) || 12;
+    this._queueTimeout = setTimeout(async () => {
+      if (this._queueTimeout === null) return;
+      this._queueIdx = (this._queueIdx + 1) % this._state.queueItems.length;
+      this._onDisplay({ action: 'queueStatus', running: true, currentIndex: this._queueIdx });
+      await this._showQueueItem();
+      this._scheduleNextQueueItem();
+    }, sec * 1000);
+  }
+
+  async _showQueueItem() {
+    const items = this._state.queueItems;
+    if (items.length === 0 || this._queueBusy) return;
+    const item = items[this._queueIdx];
+    const config = JSON.parse(item.config || '{}');
+    const s = this._state.settings;
+
+    if (item.type === 'clock') {
+      this._onDisplay({ action: 'startClock', is24h: s.is24h === 'true', timezone: s.clockTimezone || '' });
+    } else if (item.type === 'worldclock') {
+      const selected = this._state.worldClockCities.filter(c => c.is_selected);
+      const cities = selected.map(c => ({ city: c.city, tz: c.timezone }));
+      this._onDisplay({ action: 'startWorldClock', cities, is24h: s.is24h === 'true' });
+    } else if (item.type === 'weather') {
+      this._queueBusy = true;
+      try {
+        await this._fetchAndShowWeather();
+      } finally { this._queueBusy = false; }
+    } else {
+      // text
+      this._onDisplay({
+        action: 'setText',
+        text: config.text || '',
+        alignH: config.alignH || 'center',
+        alignV: config.alignV || 'middle',
+        fillColor: config.fillColor || null,
+        borderColor: config.borderColor || null,
+      });
+    }
+  }
+
+  async _fetchAndShowWeather() {
+    const s = this._state.settings;
+    const lat = parseFloat(s.weatherLat);
+    const lon = parseFloat(s.weatherLon);
+    if (!lat || !lon || isNaN(lat) || isNaN(lon)) return;
+    const unit = s.weatherUnit || 'F';
+    const tempUnit = unit === 'C' ? 'celsius' : 'fahrenheit';
+    const windUnit = unit === 'C' ? 'kmh' : 'mph';
+    const url =
+      `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}` +
+      `&current=temperature_2m,weather_code,wind_speed_10m,relative_humidity_2m` +
+      `&daily=temperature_2m_max,temperature_2m_min` +
+      `&temperature_unit=${tempUnit}&wind_speed_unit=${windUnit}` +
+      `&timezone=auto&forecast_days=1`;
+    const resp = await fetch(url);
+    const data = await resp.json();
+    this._onDisplay({ action: 'showWeather', city: s.weatherCity || 'LOCAL', data, unit });
+  }
+
+  // --- Display Commands ---
+
+  async displayText({ text, alignH, alignV, fillColor, borderColor }) {
+    this._stopLocalQueue();
+    this._onDisplay({ action: 'setText', text, alignH, alignV, fillColor, borderColor });
+    return { ok: true };
+  }
+
+  async displayClear() {
+    this._stopLocalQueue();
+    this._onDisplay({ action: 'clear' });
+    return { ok: true };
+  }
+
+  async displayClock({ is24h, timezone }) {
+    this._stopLocalQueue();
+    this._onDisplay({ action: 'startClock', is24h, timezone });
+    return { ok: true };
+  }
+
+  async displayWorldClock({ cities, is24h }) {
+    this._stopLocalQueue();
+    this._onDisplay({ action: 'startWorldClock', cities, is24h });
+    return { ok: true };
+  }
+
+  async displayWeather({ city, lat, lon, unit }) {
+    this._stopLocalQueue();
+    const tempUnit = unit === 'C' ? 'celsius' : 'fahrenheit';
+    const windUnit = unit === 'C' ? 'kmh' : 'mph';
+    const url =
+      `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}` +
+      `&current=temperature_2m,weather_code,wind_speed_10m,relative_humidity_2m` +
+      `&daily=temperature_2m_max,temperature_2m_min` +
+      `&temperature_unit=${tempUnit}&wind_speed_unit=${windUnit}` +
+      `&timezone=auto&forecast_days=1`;
+    const resp = await fetch(url);
+    const data = await resp.json();
+    this._onDisplay({ action: 'showWeather', city, data, unit });
+    return { ok: true };
+  }
+
+  // --- World Clock Cities ---
+
+  async getWorldClockCities() {
+    return [...this._state.worldClockCities];
+  }
+
+  async addWorldClockCity({ city, timezone, isCustom }) {
+    const id = this._nextId++;
+    this._state.worldClockCities.push({ id, city, timezone, is_custom: isCustom ? 1 : 0, is_selected: 1 });
+    this._save();
+    return { id };
+  }
+
+  async deleteWorldClockCity(id) {
+    this._state.worldClockCities = this._state.worldClockCities.filter(c => c.id !== id);
+    this._save();
+    return { ok: true };
+  }
+
+  async updateWorldClockCity(id, { selected }) {
+    const city = this._state.worldClockCities.find(c => c.id === id);
+    if (city) {
+      city.is_selected = selected ? 1 : 0;
+      this._save();
+    }
+    return { ok: true };
+  }
+
+  // --- Weather reverse geocode (direct, no server proxy) ---
+
+  async reverseGeocode(lat, lon) {
+    const url = `https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lon}&format=json&zoom=10`;
+    const resp = await fetch(url, { headers: { 'User-Agent': 'FlippyBoard/1.0' } });
+    const data = await resp.json();
+    const address = data.address || {};
+    const city = address.city || address.town || address.village || address.hamlet || address.county || '';
+    return { lat, lon, city };
+  }
+}
+
+
+// --- Admin logic (adapted) ---
+
+
+
+
+
+
+// --- State ---
+let settings = {};
+let alignH = 'left';
+let alignV = 'middle';
+let fillColor = null;
+let borderColor = null;
+let weatherLat = null, weatherLon = null, weatherCity = '', weatherUnit = 'F';
+let queueRunning = false;
+
+// --- Board ---
+const boardEl = document.getElementById('board');
+let board = new Board(boardEl, { rows: 6, cols: 22, fullFlip: true });
+
+document.body.addEventListener('click', () => initAudio(), { once: true });
+
+// --- Storage backend ---
+const storage = new StorageLocal((msg) => handleWsMessage(msg));
+
+// --- Helpers ---
+function shouldPlaySound(s) {
+  if (window.__STANDALONE__) return s.soundEnabled !== 'false';
+  const dest = s.soundDestination || 'display';
+  return dest === 'admin' || dest === 'both';
+}
+
+function escHtml(s) {
+  return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+}
+
+
+let clockInterval = null;
+let worldClockInterval = null;
+let clockConfig = null;
+let worldClockConfig = null;
+let lastClockStr = '';
+let lastWorldClockStr = '';
+
+function stopLocalClock() {
+  if (clockInterval) { clearInterval(clockInterval); clockInterval = null; }
+  clockConfig = null;
+}
+function stopLocalWorldClock() {
+  if (worldClockInterval) { clearInterval(worldClockInterval); worldClockInterval = null; }
+  worldClockConfig = null;
+}
+
+function handleWsMessage(msg) {
+  switch (msg.action) {
+    case 'sync':
+      settings = msg.settings || {};
+      applySettings(settings);
+      if (msg.currentMode) handleWsMessage(msg.currentMode);
+      break;
+    case 'setText':
+      stopLocalClock(); stopLocalWorldClock();
+      board.setBoardText(msg.text || '', msg.alignH || 'center', msg.alignV || 'middle', msg.fillColor || null, msg.borderColor || null);
+      break;
+    case 'setRows':
+      stopLocalClock(); stopLocalWorldClock();
+      board.setBoard(msg.rows);
+      break;
+    case 'clear':
+      stopLocalClock(); stopLocalWorldClock();
+      board.clearBoard();
+      break;
+    case 'startClock':
+      stopLocalClock(); stopLocalWorldClock();
+      clockConfig = { is24h: msg.is24h, timezone: msg.timezone };
+      lastClockStr = '';
+      const tickClock = () => {
+        const lines = formatClockLines(board.rows, board.cols, clockConfig.is24h, clockConfig.timezone);
+        const sig = lines.join('|');
+        if (sig !== lastClockStr) { lastClockStr = sig; board.setBoard(lines); }
+      };
+      tickClock();
+      clockInterval = setInterval(tickClock, 1000);
+      break;
+    case 'startWorldClock':
+      stopLocalClock(); stopLocalWorldClock();
+      worldClockConfig = { cities: msg.cities, is24h: msg.is24h };
+      lastWorldClockStr = '';
+      const tickWC = () => {
+        const lines = formatWorldClockLines(board.rows, board.cols, worldClockConfig.cities, worldClockConfig.is24h);
+        const sig = lines.join('|');
+        if (sig !== lastWorldClockStr) { lastWorldClockStr = sig; board.setBoard(lines); }
+      };
+      tickWC();
+      worldClockInterval = setInterval(tickWC, 1000);
+      break;
+    case 'showWeather':
+      stopLocalClock(); stopLocalWorldClock();
+      const wlines = formatWeatherLines(board.rows, board.cols, msg.data, msg.city, msg.unit);
+      board.setBoardText(wlines.join('\n'));
+      break;
+    case 'updateSettings':
+      settings = msg.settings || {};
+      applySettings(settings);
+      break;
+    case 'queueStatus':
+      queueRunning = msg.running;
+      queueCurrentIndex = msg.currentIndex || 0;
+      document.getElementById('btn-queue-start').textContent = msg.running ? 'Stop Rotation' : 'Start Rotation';
+      renderQueue();
+      break;
+  }
+}
+
+function applySettings(s) {
+  const rows = parseInt(s.rows) || 6;
+  const cols = parseInt(s.cols) || 22;
+  if (rows !== board.rows || cols !== board.cols) board.resize(rows, cols);
+  board.fullFlip = s.fullFlip === 'true';
+  setSoundEnabled(shouldPlaySound(s));
+
+  document.getElementById('cfg-rows').value = rows;
+  document.getElementById('cfg-cols').value = cols;
+  document.getElementById('chk-full-flip').checked = s.fullFlip === 'true';
+  document.getElementById('chk-24h').checked = s.is24h === 'true';
+  document.getElementById('queue-dwell').value = s.queueDwellSec || '12';
+
+  if (s.weatherLat && s.weatherLat !== 'null') weatherLat = parseFloat(s.weatherLat);
+  if (s.weatherLon && s.weatherLon !== 'null') weatherLon = parseFloat(s.weatherLon);
+  if (s.weatherCity) { weatherCity = s.weatherCity; document.getElementById('weather-city').value = weatherCity; }
+  if (s.weatherUnit) {
+    weatherUnit = s.weatherUnit;
+    document.getElementById('weather-unit-f').classList.toggle('active', weatherUnit === 'F');
+    document.getElementById('weather-unit-c').classList.toggle('active', weatherUnit === 'C');
+  }
+  if (s.clockTimezone) document.getElementById('clock-timezone').value = s.clockTimezone;
+
+  if (s.alignH) {
+    alignH = s.alignH;
+    document.querySelectorAll('#align-h .align-btn').forEach(b => b.classList.toggle('active', b.dataset.val === alignH));
+  }
+  if (s.alignV) {
+    alignV = s.alignV;
+    document.querySelectorAll('#align-v .align-btn').forEach(b => b.classList.toggle('active', b.dataset.val === alignV));
+  }
+  if (s.fillColor) fillColor = s.fillColor || null;
+  if (s.borderColor) borderColor = s.borderColor || null;
+  updateToolbarIndicator('btn-fill', fillColor);
+  updateToolbarIndicator('btn-border', borderColor);
+
+  let soundOn;
+  if (window.__STANDALONE__) {
+    soundOn = s.soundEnabled !== 'false';
+    document.getElementById('sound-label').textContent = 'Sound: ' + (soundOn ? 'On' : 'Off');
+  } else {
+    const dest = s.soundDestination || 'display';
+    const labels = { display: 'Display', admin: 'Admin', both: 'Both', off: 'Off' };
+    document.getElementById('sound-label').textContent = 'Sound: ' + (labels[dest] || 'Display');
+    soundOn = dest !== 'off';
+  }
+  document.getElementById('btn-sound').classList.toggle('active', soundOn);
+  document.getElementById('sound-icon').setAttribute('d',
+    soundOn
+      ? 'M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z'
+      : 'M16.5 12c0-1.77-1.02-3.29-2.5-4.03v2.21l2.45 2.45c.03-.2.05-.41.05-.63zm2.5 0c0 .94-.2 1.82-.54 2.64l1.51 1.51C20.63 14.91 21 13.5 21 12c0-4.28-2.99-7.86-7-8.77v2.06c2.89.86 5 3.54 5 6.71zM4.27 3L3 4.27 7.73 9H3v6h4l5 5v-6.73l4.25 4.25c-.67.52-1.42.93-2.25 1.18v2.06c1.38-.31 2.63-.95 3.69-1.81L19.73 21 21 19.73l-9-9L4.27 3zM12 4L9.91 6.09 12 8.18V4z'
+  );
+
+  if (weatherLat && weatherLon) {
+    document.getElementById('weather-status').textContent = 'Location: ' + (weatherCity || weatherLat.toFixed(2) + ', ' + weatherLon.toFixed(2));
   }
 }
 
 
 
-// ═══════════════════════════════════════
-//  WEATHER
-// ═══════════════════════════════════════
-let weatherLat = null, weatherLon = null, weatherCity = '';
-let weatherUnit = 'F'; // 'F' or 'C'
-let weatherAutoRefresh = false;
-let weatherRefreshMin = 15;
-let weatherInterval = null;
-
-const WMO_CODES = {
-  0: 'CLEAR SKY', 1: 'MAINLY CLEAR', 2: 'PARTLY CLOUDY', 3: 'OVERCAST',
-  45: 'FOG', 48: 'RIME FOG',
-  51: 'LIGHT DRIZZLE', 53: 'DRIZZLE', 55: 'HEAVY DRIZZLE',
-  56: 'FREEZING DRIZZLE', 57: 'FREEZING DRIZZLE',
-  61: 'LIGHT RAIN', 63: 'RAIN', 65: 'HEAVY RAIN',
-  66: 'FREEZING RAIN', 67: 'FREEZING RAIN',
-  71: 'LIGHT SNOW', 73: 'SNOW', 75: 'HEAVY SNOW',
-  77: 'SNOW GRAINS',
-  80: 'LIGHT SHOWERS', 81: 'SHOWERS', 82: 'HEAVY SHOWERS',
-  85: 'SNOW SHOWERS', 86: 'HEAVY SNOW SHOWERS',
-  95: 'THUNDERSTORM', 96: 'THUNDERSTORM/HAIL', 99: 'THUNDERSTORM/HAIL',
-};
-
-function weatherStatus(msg) {
-  document.getElementById('weather-status').textContent = msg;
+// --- Toolbar indicator helper ---
+function updateToolbarIndicator(btnId, colorCode) {
+  const btn = document.getElementById(btnId);
+  let dot = btn.querySelector('.toolbar-indicator');
+  if (!colorCode) { if (dot) dot.remove(); return; }
+  if (!dot) { dot = document.createElement('span'); dot.className = 'toolbar-indicator'; btn.appendChild(dot); }
+  const ch = CODE_TO_COLOR[colorCode];
+  if (ch && COLOR_TILES[ch]) dot.style.background = COLOR_TILES[ch].upper;
 }
 
-async function geocodeCity(city) {
-  const url = `https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(city)}&count=1&language=en`;
-  const resp = await fetch(url);
-  const data = await resp.json();
-  if (!data.results || data.results.length === 0) throw new Error('City not found');
-  const r = data.results[0];
-  return { lat: r.latitude, lon: r.longitude, name: r.name, admin: r.admin1 || '', country: r.country_code || '' };
-}
-
+// --- City autocomplete helper ---
 function setupCityAutocomplete(inputEl, onSelect) {
-  // Wrap input in .autocomplete-wrap
   const wrap = document.createElement('div');
   wrap.className = 'autocomplete-wrap';
   inputEl.parentNode.insertBefore(wrap, inputEl);
@@ -1777,12 +2152,7 @@ function setupCityAutocomplete(inputEl, onSelect) {
   let activeIdx = -1;
   let results = [];
 
-  function close() {
-    list.classList.remove('open');
-    list.innerHTML = '';
-    activeIdx = -1;
-    results = [];
-  }
+  function close() { list.classList.remove('open'); list.innerHTML = ''; activeIdx = -1; results = []; }
 
   function render() {
     list.innerHTML = '';
@@ -1791,25 +2161,15 @@ function setupCityAutocomplete(inputEl, onSelect) {
       const item = document.createElement('div');
       item.className = 'autocomplete-item' + (i === activeIdx ? ' active' : '');
       const sub = [r.admin1, r.country_code, r.timezone].filter(Boolean).join(', ');
-      item.innerHTML = `<div><strong>${r.name}</strong></div><div class="ac-sub">${sub}</div>`;
-      item.addEventListener('mousedown', (e) => {
-        e.preventDefault();
-        select(r);
-      });
+      item.innerHTML = '<div><strong>' + escHtml(r.name) + '</strong></div><div class="ac-sub">' + escHtml(sub) + '</div>';
+      item.addEventListener('mousedown', (e) => { e.preventDefault(); select(r); });
       list.appendChild(item);
     });
     list.classList.add('open');
   }
 
   function select(r) {
-    onSelect({
-      name: r.name,
-      admin1: r.admin1 || '',
-      country_code: r.country_code || '',
-      lat: r.latitude,
-      lon: r.longitude,
-      timezone: r.timezone
-    });
+    onSelect({ name: r.name, admin1: r.admin1 || '', country_code: r.country_code || '', lat: r.latitude, lon: r.longitude, timezone: r.timezone });
     close();
   }
 
@@ -1831,115 +2191,20 @@ function setupCityAutocomplete(inputEl, onSelect) {
 
   inputEl.addEventListener('keydown', (e) => {
     if (!list.classList.contains('open')) return;
-    if (e.key === 'ArrowDown') {
-      e.preventDefault();
-      activeIdx = Math.min(activeIdx + 1, results.length - 1);
-      render();
-    } else if (e.key === 'ArrowUp') {
-      e.preventDefault();
-      activeIdx = Math.max(activeIdx - 1, 0);
-      render();
-    } else if (e.key === 'Enter' && activeIdx >= 0) {
-      e.preventDefault();
-      select(results[activeIdx]);
-    } else if (e.key === 'Escape') {
-      close();
-    }
+    if (e.key === 'ArrowDown') { e.preventDefault(); activeIdx = Math.min(activeIdx + 1, results.length - 1); render(); }
+    else if (e.key === 'ArrowUp') { e.preventDefault(); activeIdx = Math.max(activeIdx - 1, 0); render(); }
+    else if (e.key === 'Enter' && activeIdx >= 0) { e.preventDefault(); select(results[activeIdx]); }
+    else if (e.key === 'Escape') { close(); }
   });
 
-  document.addEventListener('click', (e) => {
-    if (!wrap.contains(e.target)) close();
-  });
+  document.addEventListener('click', (e) => { if (!wrap.contains(e.target)) close(); });
 }
 
-async function fetchWeather(lat, lon) {
-  const unit = weatherUnit === 'C' ? 'celsius' : 'fahrenheit';
-  const windUnit = weatherUnit === 'C' ? 'kmh' : 'mph';
-  const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,weather_code,wind_speed_10m,relative_humidity_2m&daily=temperature_2m_max,temperature_2m_min&temperature_unit=${unit}&wind_speed_unit=${windUnit}&timezone=auto&forecast_days=1`;
-  const resp = await fetch(url);
-  if (!resp.ok) throw new Error('Weather API error');
-  return await resp.json();
-}
+// --- Saved Messages ---
+let savedMessages = [];
 
-function displayWeather(data, cityName) {
-  if (queueTimeout === null) { stopClock(); }
-
-  const cur = data.current;
-  const daily = data.daily;
-  const temp = Math.round(cur.temperature_2m);
-  const hi = Math.round(daily.temperature_2m_max[0]);
-  const lo = Math.round(daily.temperature_2m_min[0]);
-  const wind = Math.round(cur.wind_speed_10m);
-  const humidity = Math.round(cur.relative_humidity_2m);
-  const condition = WMO_CODES[cur.weather_code] || 'UNKNOWN';
-  const unitLabel = weatherUnit === 'C' ? 'C' : 'F';
-  const windLabel = weatherUnit === 'C' ? 'KMH' : 'MPH';
-
-  const lines = [];
-  if (rows >= 6) {
-    lines.push(cityName.toUpperCase());
-    lines.push(temp + '.' + unitLabel);
-    lines.push(condition);
-    lines.push('HI ' + hi + '   LO ' + lo);
-    lines.push('WIND ' + wind + ' ' + windLabel);
-    lines.push('HUMIDITY ' + humidity);
-  } else if (rows >= 3) {
-    lines.push(temp + '.' + unitLabel + '  ' + condition);
-    lines.push('HI ' + hi + '  LO ' + lo);
-    lines.push('WIND ' + wind + ' ' + windLabel + '  HUM ' + humidity);
-  } else {
-    lines.push(temp + '.' + unitLabel + ' ' + condition);
-  }
-
-  return setBoardText(lines.join('\n'), null, null, null, null);
-}
-
-async function showWeather() {
-  if (weatherLat == null || weatherLon == null) {
-    weatherStatus('No location set. Use city search or auto-detect.');
-    return;
-  }
-  weatherStatus('Fetching weather...');
-  try {
-    const data = await fetchWeather(weatherLat, weatherLon);
-    await displayWeather(data, weatherCity || 'LOCAL');
-    weatherStatus('Updated: ' + new Date().toLocaleTimeString());
-  } catch (e) {
-    weatherStatus('Error: ' + e.message);
-  }
-}
-
-function startWeatherAutoRefresh() {
-  stopWeatherAutoRefresh();
-  if (!weatherAutoRefresh) return;
-  weatherInterval = setInterval(() => showWeather(), weatherRefreshMin * 60 * 1000);
-}
-
-function stopWeatherAutoRefresh() {
-  if (weatherInterval) { clearInterval(weatherInterval); weatherInterval = null; }
-}
-
-function escHtml(s) {
-  return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
-}
-
-// ═══════════════════════════════════════
-//  SAVED MESSAGES
-// ═══════════════════════════════════════
-let savedMessages = []; // Array of { name, text }
-
-function saveMessage(text) {
-  if (!text.trim()) return;
-  const name = prompt('Name for this message:', text.trim().slice(0, 40));
-  if (name === null) return; // cancelled
-  savedMessages.push({ name: name.trim() || 'Untitled', text: text.trim(), alignH, alignV, fillColor, borderColor });
-  persistState();
-  renderSaved();
-}
-
-function removeSaved(idx) {
-  savedMessages.splice(idx, 1);
-  persistState();
+async function loadSavedMessages() {
+  savedMessages = await storage.getMessages();
   renderSaved();
 }
 
@@ -1951,238 +2216,551 @@ function renderSaved() {
     return;
   }
   savedMessages.forEach((entry, i) => {
-    // Support legacy plain-string entries
-    const name = typeof entry === 'string' ? entry.slice(0, 40) : entry.name;
-    const text = typeof entry === 'string' ? entry : entry.text;
-    const preview = text.length > 60 ? text.slice(0, 57) + '...' : text;
+    const preview = entry.text.length > 60 ? entry.text.slice(0, 57) + '...' : entry.text;
     const li = document.createElement('li');
     li.className = 'saved-item';
-    li.innerHTML = `<span class="idx">${i + 1}</span><span class="msg" data-idx="${i}" title="${escHtml(text.replace(/\n/g, ' '))}"><strong>${escHtml(name)}</strong> <span style="color:var(--text-dim)">${escHtml(preview.replace(/\n/g, ' '))}</span></span><button class="btn btn-sm queue-add" data-idx="${i}">Queue</button><span class="remove" data-idx="${i}">&times;</span>`;
+    li.innerHTML = '<span class="idx">' + (i+1) + '</span>' +
+      '<span class="msg" data-id="' + entry.id + '" title="' + escHtml(entry.text.replace(/\n/g, ' ')) + '">' +
+        '<strong>' + escHtml(entry.name) + '</strong> <span style="color:var(--text-dim)">' + escHtml(preview.replace(/\n/g, ' ')) + '</span>' +
+      '</span>' +
+      '<button class="btn btn-sm queue-add" data-id="' + entry.id + '">Queue</button>' +
+      '<span class="remove" data-id="' + entry.id + '">&times;</span>';
     list.appendChild(li);
   });
 }
 
-// ═══════════════════════════════════════
-//  PERSISTENCE (localStorage)
-// ═══════════════════════════════════════
-const STORAGE_KEY = 'splitflap_state';
+// --- Queue ---
+let queueItems = [];
+let queueCurrentIndex = 0;
 
-function persistState() {
-  const state = {
-    rows, cols, alignH, alignV, fillColor, borderColor, soundEnabled, is24h, fullFlip,
-    clockTimezone,
-    queueDwellSec: parseInt(document.getElementById('queue-dwell').value) || 8,
-    queue,
-    savedMessages,
-    worldClock: {
-      cities: worldClockCities.map(c => c.city),
-      customCities: customWorldCities,
-    },
-    weather: {
-      lat: weatherLat, lon: weatherLon, city: weatherCity,
-      unit: weatherUnit, autoRefresh: weatherAutoRefresh, refreshMin: weatherRefreshMin,
-    },
-  };
-  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); } catch {}
+async function loadQueue() {
+  queueItems = await storage.getQueueItems();
+  renderQueue();
 }
 
-const WORLD_CITIES = [
-  { city: 'Tokyo, Japan', lat: 35.6762, lon: 139.6503, tz: 'Asia/Tokyo' },
-  { city: 'London, England', lat: 51.5074, lon: -0.1278, tz: 'Europe/London' },
-  { city: 'New York, USA', lat: 40.7128, lon: -74.0060, tz: 'America/New_York' },
-  { city: 'Paris, France', lat: 48.8566, lon: 2.3522, tz: 'Europe/Paris' },
-  { city: 'Sydney, Australia', lat: -33.8688, lon: 151.2093, tz: 'Australia/Sydney' },
-  { city: 'Dubai, UAE', lat: 25.2048, lon: 55.2708, tz: 'Asia/Dubai' },
-  { city: 'Singapore', lat: 1.3521, lon: 103.8198, tz: 'Asia/Singapore' },
-  { city: 'Rome, Italy', lat: 41.9028, lon: 12.4964, tz: 'Europe/Rome' },
-  { city: 'Cairo, Egypt', lat: 30.0444, lon: 31.2357, tz: 'Africa/Cairo' },
-  { city: 'Mumbai, India', lat: 19.0760, lon: 72.8777, tz: 'Asia/Kolkata' },
-  { city: 'Toronto, Canada', lat: 43.6532, lon: -79.3832, tz: 'America/Toronto' },
-  { city: 'Berlin, Germany', lat: 52.5200, lon: 13.4050, tz: 'Europe/Berlin' },
-  { city: 'São Paulo, Brazil', lat: -23.5505, lon: -46.6333, tz: 'America/Sao_Paulo' },
-  { city: 'Mexico City, Mexico', lat: 19.4326, lon: -99.1332, tz: 'America/Mexico_City' },
-  { city: 'Seoul, South Korea', lat: 37.5665, lon: 126.9780, tz: 'Asia/Seoul' },
-  { city: 'Istanbul, Turkey', lat: 41.0082, lon: 28.9784, tz: 'Europe/Istanbul' },
-  { city: 'Bangkok, Thailand', lat: 13.7563, lon: 100.5018, tz: 'Asia/Bangkok' },
-  { city: 'Buenos Aires, Argentina', lat: -34.6037, lon: -58.3816, tz: 'America/Argentina/Buenos_Aires' },
-  { city: 'Nairobi, Kenya', lat: -1.2921, lon: 36.8219, tz: 'Africa/Nairobi' },
-  { city: 'Reykjavik, Iceland', lat: 64.1466, lon: -21.9426, tz: 'Atlantic/Reykjavik' },
-];
-
-function loadDefaults() {
-  const city = WORLD_CITIES[Math.floor(Math.random() * WORLD_CITIES.length)];
-  const defaults = {
-    rows: 6, cols: 22, alignH: 'center', alignV: 'middle',
-    soundEnabled: true, is24h: false, fullFlip: true,
-    queueDwellSec: 12,
-    queue: [
-      { type: 'saved', name: 'Welcome to\nFlippy Board', text: 'Welcome to\nFlippy Board' },
-      { type: 'saved', name: 'Menu', text: 'Burger{<>}$14\nCheesburger{<>}$15\nFries{<>}$4\nMilkshake{<>}$5\nPop{<>}$2', alignH: 'left', alignV: 'top' },
-      { type: 'clock' },
-      { type: 'worldclock' },
-      { type: 'weather' },
-    ],
-    savedMessages: [
-      { name: 'Welcome to\nFlippy Board', text: 'Welcome to\nFlippy Board' },
-      { name: 'Menu', text: 'Burger{<>}$14\nCheesburger{<>}$15\nFries{<>}$4\nMilkshake{<>}$5\nPop{<>}$2', alignH: 'left', alignV: 'top' },
-    ],
-    weather: {
-      lat: city.lat, lon: city.lon, city: city.city,
-      unit: 'F', autoRefresh: false, refreshMin: 15,
-    },
-  };
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(defaults));
+function queueItemLabel(item) {
+  const config = JSON.parse(item.config || '{}');
+  if (item.type === 'clock') return '\u23F0 Clock';
+  if (item.type === 'worldclock') return '\uD83C\uDF0D World Clock';
+  if (item.type === 'weather') return '\u2601 Weather';
+  return config.name || config.text || item.type;
 }
 
-function loadState() {
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY);
-    if (!raw) return false;
-    const s = JSON.parse(raw);
+function renderQueue() {
+  const list = document.getElementById('queue-list');
+  list.innerHTML = '';
+  queueItems.forEach((item, i) => {
+    const li = document.createElement('li');
+    li.className = 'queue-item' + (queueRunning && i === queueCurrentIndex ? ' active' : '');
+    li.draggable = true;
+    li.dataset.idx = i;
+    li.dataset.id = item.id;
+    const label = queueItemLabel(item);
+    li.innerHTML = '<span class="idx">' + (i+1) + '</span><span class="msg">' + escHtml(label) + '</span><span class="remove" data-id="' + item.id + '">&times;</span>';
+    list.appendChild(li);
+  });
+}
 
-    if (s.rows) { rows = s.rows; document.getElementById('cfg-rows').value = rows; }
-    if (s.cols) { cols = s.cols; document.getElementById('cfg-cols').value = cols; }
+// --- World Clock Cities ---
+let worldClockCities = [];
 
-    if (s.alignH) {
-      alignH = s.alignH;
-      document.querySelectorAll('#align-h .align-btn').forEach(b => {
-        b.classList.toggle('active', b.dataset.val === alignH);
+async function loadWorldClockCities() {
+  worldClockCities = await storage.getWorldClockCities();
+  renderWorldClockCityPicker();
+}
+
+function renderWorldClockCityPicker() {
+  const container = document.getElementById('worldclock-city-list');
+  container.innerHTML = '';
+  worldClockCities.forEach(c => {
+    const wrapper = document.createElement('div');
+    wrapper.style.cssText = 'display:flex;align-items:center;gap:6px';
+    const label = document.createElement('label');
+    label.style.cssText = 'display:flex;align-items:center;gap:6px;cursor:pointer;flex:1';
+    const cb = document.createElement('input');
+    cb.type = 'checkbox';
+    cb.checked = !!c.is_selected;
+    cb.addEventListener('change', async () => {
+      await storage.updateWorldClockCity(c.id, { selected: cb.checked });
+      c.is_selected = cb.checked ? 1 : 0;
+    });
+    label.appendChild(cb);
+    label.appendChild(document.createTextNode(c.city));
+    wrapper.appendChild(label);
+    if (c.is_custom) {
+      const removeBtn = document.createElement('span');
+      removeBtn.textContent = '\u00d7';
+      removeBtn.title = 'Remove custom city';
+      removeBtn.style.cssText = 'cursor:pointer;color:var(--text-dim);font-size:14px;padding:0 4px';
+      removeBtn.addEventListener('mouseover', () => { removeBtn.style.color = 'var(--danger)'; });
+      removeBtn.addEventListener('mouseout', () => { removeBtn.style.color = 'var(--text-dim)'; });
+      removeBtn.addEventListener('click', async () => {
+        await storage.deleteWorldClockCity(c.id);
+        await loadWorldClockCities();
       });
+      wrapper.appendChild(removeBtn);
     }
-    if (s.alignV) {
-      alignV = s.alignV;
-      document.querySelectorAll('#align-v .align-btn').forEach(b => {
-        b.classList.toggle('active', b.dataset.val === alignV);
-      });
-    }
-
-    if (s.fillColor) fillColor = s.fillColor;
-    else fillColor = null;
-    if (s.borderColor) borderColor = s.borderColor;
-    else borderColor = null;
-
-    if (typeof s.soundEnabled === 'boolean') {
-      soundEnabled = s.soundEnabled;
-      document.getElementById('btn-sound').classList.toggle('active', soundEnabled);
-      document.getElementById('sound-icon').setAttribute('d',
-        soundEnabled
-          ? 'M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z'
-          : 'M16.5 12c0-1.77-1.02-3.29-2.5-4.03v2.21l2.45 2.45c.03-.2.05-.41.05-.63zm2.5 0c0 .94-.2 1.82-.54 2.64l1.51 1.51C20.63 14.91 21 13.5 21 12c0-4.28-2.99-7.86-7-8.77v2.06c2.89.86 5 3.54 5 6.71zM4.27 3L3 4.27 7.73 9H3v6h4l5 5v-6.73l4.25 4.25c-.67.52-1.42.93-2.25 1.18v2.06c1.38-.31 2.63-.95 3.69-1.81L19.73 21 21 19.73l-9-9L4.27 3zM12 4L9.91 6.09 12 8.18V4z'
-      );
-    }
-
-    if (typeof s.is24h === 'boolean') {
-      is24h = s.is24h;
-      document.getElementById('chk-24h').checked = is24h;
-    }
-
-    if (s.clockTimezone) {
-      clockTimezone = s.clockTimezone;
-      document.getElementById('clock-timezone').value = clockTimezone;
-    }
-
-    if (typeof s.fullFlip === 'boolean') {
-      fullFlip = s.fullFlip;
-      document.getElementById('chk-full-flip').checked = fullFlip;
-    }
-
-    if (Array.isArray(s.queue)) {
-      queue = s.queue;
-      renderQueue();
-    }
-
-    if (s.queueDwellSec) {
-      document.getElementById('queue-dwell').value = s.queueDwellSec;
-    }
-
-    if (Array.isArray(s.savedMessages)) {
-      savedMessages = s.savedMessages;
-      renderSaved();
-    }
-
-    // World Clock
-    const wc = s.worldClock;
-    if (wc) {
-      if (Array.isArray(wc.customCities)) {
-        customWorldCities = wc.customCities;
-      }
-      if (Array.isArray(wc.cities)) {
-        worldClockCities = wc.cities
-          .map(name => allWorldClockCities().find(c => c.city === name))
-          .filter(Boolean);
-      }
-    }
-
-    // Weather
-    const w = s.weather;
-    if (w) {
-      if (w.lat != null) weatherLat = w.lat;
-      if (w.lon != null) weatherLon = w.lon;
-      if (w.city) {
-        weatherCity = w.city;
-        document.getElementById('weather-city').value = weatherCity;
-      }
-      if (w.unit === 'C' || w.unit === 'F') {
-        weatherUnit = w.unit;
-        document.getElementById('weather-unit-f').classList.toggle('active', weatherUnit === 'F');
-        document.getElementById('weather-unit-c').classList.toggle('active', weatherUnit === 'C');
-      }
-      if (typeof w.autoRefresh === 'boolean') {
-        weatherAutoRefresh = w.autoRefresh;
-        document.getElementById('chk-weather-auto').checked = weatherAutoRefresh;
-      }
-      if (w.refreshMin) {
-        weatherRefreshMin = w.refreshMin;
-        document.getElementById('weather-refresh-min').value = weatherRefreshMin;
-      }
-    }
-    if (weatherLat != null && weatherLon != null) {
-      weatherStatus('Location: ' + (weatherCity || weatherLat.toFixed(2) + ', ' + weatherLon.toFixed(2)));
-    }
-    return true;
-  } catch {}
-  return false;
+    container.appendChild(wrapper);
+  });
 }
 
-function exportConfig() {
-  persistState();
-  const raw = localStorage.getItem(STORAGE_KEY);
-  if (!raw) return;
-  const s = JSON.parse(raw);
+// ═══════════════════════════════════════
+//  UI WIRING
+// ═══════════════════════════════════════
+
+// Tabs
+document.querySelectorAll('.tab').forEach(tab => {
+  tab.addEventListener('click', () => {
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
+    tab.classList.add('active');
+    document.getElementById('pane-' + tab.dataset.tab).classList.add('active');
+  });
+});
+
+// --- Text ---
+document.getElementById('btn-send').addEventListener('click', () => {
+  const text = document.getElementById('text-input').value;
+  if (text.trim()) storage.displayText({ text, alignH, alignV, fillColor, borderColor });
+});
+
+document.getElementById('text-input').addEventListener('keydown', (e) => {
+  if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) {
+    e.preventDefault();
+    document.getElementById('btn-send').click();
+  }
+});
+
+document.getElementById('btn-clear').addEventListener('click', () => {
+  storage.displayClear();
+});
+
+// Color palette - insert codes
+const swatchContainer = document.getElementById('color-swatches');
+for (const [ch, info] of Object.entries(COLOR_TILES)) {
+  const swatch = document.createElement('div');
+  swatch.className = 'color-swatch';
+  swatch.style.background = info.upper;
+  swatch.title = info.name + ' {' + info.code + '}';
+  swatch.addEventListener('click', (e) => {
+    e.stopPropagation();
+    const ta = document.getElementById('text-input');
+    const start = ta.selectionStart;
+    const end = ta.selectionEnd;
+    const code = '{' + info.code + '}';
+    ta.value = ta.value.substring(0, start) + code + ta.value.substring(end);
+    ta.selectionStart = ta.selectionEnd = start + code.length;
+    ta.focus();
+  });
+  swatchContainer.appendChild(swatch);
+}
+
+// Fill & Border
+function buildActionSwatches(containerId, onClick) {
+  const container = document.getElementById(containerId);
+  const none = document.createElement('div');
+  none.className = 'color-swatch swatch-none';
+  none.title = 'None';
+  none.addEventListener('click', () => {
+    onClick(null);
+    document.querySelectorAll('.toolbar-dropdown.open').forEach(d => d.classList.remove('open'));
+  });
+  container.appendChild(none);
+  for (const [ch, info] of Object.entries(COLOR_TILES)) {
+    const swatch = document.createElement('div');
+    swatch.className = 'color-swatch';
+    swatch.style.background = info.upper;
+    swatch.title = info.name;
+    swatch.addEventListener('click', () => {
+      onClick(info.code);
+      document.querySelectorAll('.toolbar-dropdown.open').forEach(d => d.classList.remove('open'));
+    });
+    container.appendChild(swatch);
+  }
+}
+
+buildActionSwatches('fill-swatches', (code) => {
+  fillColor = code === null ? null : (fillColor === code ? null : code);
+  updateToolbarIndicator('btn-fill', fillColor);
+  storage.updateSettings({ fillColor: fillColor || '' });
+});
+buildActionSwatches('border-swatches', (code) => {
+  borderColor = code === null ? null : (borderColor === code ? null : code);
+  updateToolbarIndicator('btn-border', borderColor);
+  storage.updateSettings({ borderColor: borderColor || '' });
+});
+
+// Insert menu - insert formatting codes at cursor (or line start for alignment codes)
+const LINE_PREFIX_CODES = new Set(['{<}', '{C}', '{>}']);
+document.querySelectorAll('.insert-menu-item').forEach(item => {
+  item.addEventListener('click', (e) => {
+    e.stopPropagation();
+    const ta = document.getElementById('text-input');
+    const code = item.dataset.code;
+    let insertAt, cursorAfter;
+    if (LINE_PREFIX_CODES.has(code)) {
+      const lineStart = ta.value.lastIndexOf('\n', ta.selectionStart - 1) + 1;
+      insertAt = lineStart;
+      cursorAfter = ta.selectionStart + code.length;
+    } else {
+      insertAt = ta.selectionStart;
+      cursorAfter = insertAt + code.length;
+    }
+    ta.value = ta.value.substring(0, insertAt) + code + ta.value.substring(LINE_PREFIX_CODES.has(code) ? insertAt : ta.selectionEnd);
+    ta.selectionStart = ta.selectionEnd = cursorAfter;
+    ta.focus();
+    document.querySelectorAll('.toolbar-dropdown.open').forEach(d => d.classList.remove('open'));
+  });
+});
+
+// Toolbar dropdown toggles
+document.querySelectorAll('.toolbar-dropdown > .toolbar-btn').forEach(btn => {
+  btn.addEventListener('click', (e) => {
+    e.stopPropagation();
+    const dd = btn.parentElement;
+    const wasOpen = dd.classList.contains('open');
+    document.querySelectorAll('.toolbar-dropdown.open').forEach(d => d.classList.remove('open'));
+    if (!wasOpen) dd.classList.add('open');
+  });
+});
+document.addEventListener('click', () => {
+  document.querySelectorAll('.toolbar-dropdown.open').forEach(d => d.classList.remove('open'));
+});
+
+// Alignment toggles
+function wireAlignGroup(id, setter) {
+  const group = document.getElementById(id);
+  group.querySelectorAll('.align-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      group.querySelectorAll('.align-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      setter(btn.dataset.val);
+    });
+  });
+}
+wireAlignGroup('align-h', v => { alignH = v; storage.updateSettings({ alignH: v }); });
+wireAlignGroup('align-v', v => { alignV = v; storage.updateSettings({ alignV: v }); });
+
+// --- Clock ---
+document.getElementById('btn-clock-start').addEventListener('click', () => {
+  const tz = document.getElementById('clock-timezone').value.trim();
+  const match = tz.match(/\(([^)]+)\)$/);
+  const timezone = match ? match[1] : tz;
+  const is24h = document.getElementById('chk-24h').checked;
+  storage.displayClock({ is24h, timezone });
+  storage.updateSettings({ clockTimezone: timezone });
+});
+document.getElementById('btn-clock-queue').addEventListener('click', () => {
+  storage.addQueueItem({ type: 'clock', config: '{}' }).then(() => loadQueue());
+});
+
+setupCityAutocomplete(document.getElementById('clock-timezone'), (result) => {
+  document.getElementById('clock-timezone').value = result.name + ' (' + result.timezone + ')';
+  storage.updateSettings({ clockTimezone: result.timezone });
+});
+
+// --- World Clock ---
+document.getElementById('btn-worldclock-start').addEventListener('click', () => {
+  const is24h = document.getElementById('chk-24h').checked;
+  const selected = worldClockCities.filter(c => c.is_selected);
+  const cities = selected.map(c => ({ city: c.city, tz: c.timezone }));
+  storage.displayWorldClock({ cities, is24h });
+});
+document.getElementById('btn-worldclock-queue').addEventListener('click', () => {
+  storage.addQueueItem({ type: 'worldclock', config: '{}' }).then(() => loadQueue());
+});
+document.getElementById('btn-worldclock-random').addEventListener('click', async () => {
+  // Select random subset
+  const shuffled = [...worldClockCities].sort(() => Math.random() - 0.5);
+  const rows = parseInt(settings.rows) || 6;
+  const toSelect = shuffled.slice(0, rows);
+  for (const c of worldClockCities) {
+    const shouldSelect = toSelect.some(s => s.id === c.id);
+    if (!!c.is_selected !== shouldSelect) {
+      await storage.updateWorldClockCity(c.id, { selected: shouldSelect });
+      c.is_selected = shouldSelect ? 1 : 0;
+    }
+  }
+  renderWorldClockCityPicker();
+});
+document.getElementById('btn-worldclock-add-custom').addEventListener('click', async () => {
+  const nameInput = document.getElementById('worldclock-custom-name');
+  const tzInput = document.getElementById('worldclock-custom-tz');
+  const name = nameInput.value.trim();
+  const tz = tzInput.value.trim();
+  if (!name || !tz) return;
+  try { Intl.DateTimeFormat('en-US', { timeZone: tz }).format(); } catch { alert('Invalid timezone: ' + tz); return; }
+  await storage.addWorldClockCity({ city: name, timezone: tz, isCustom: true });
+  nameInput.value = '';
+  tzInput.value = '';
+  await loadWorldClockCities();
+});
+
+setupCityAutocomplete(document.getElementById('worldclock-custom-name'), (result) => {
+  document.getElementById('worldclock-custom-name').value = result.name + (result.admin1 ? ', ' + result.admin1 : '');
+  document.getElementById('worldclock-custom-tz').value = result.timezone;
+});
+
+// --- Weather ---
+setupCityAutocomplete(document.getElementById('weather-city'), (result) => {
+  weatherLat = result.lat;
+  weatherLon = result.lon;
+  weatherCity = result.name + (result.admin1 ? ', ' + result.admin1 : '');
+  document.getElementById('weather-city').value = weatherCity;
+  document.getElementById('weather-status').textContent = 'Found: ' + weatherCity;
+  storage.updateSettings({ weatherLat: String(weatherLat), weatherLon: String(weatherLon), weatherCity });
+});
+document.getElementById('btn-weather-locate').addEventListener('click', () => {
+  if (!navigator.geolocation) { document.getElementById('weather-status').textContent = 'Geolocation not supported.'; return; }
+  document.getElementById('weather-status').textContent = 'Detecting location...';
+  navigator.geolocation.getCurrentPosition(
+    async (pos) => {
+      weatherLat = pos.coords.latitude;
+      weatherLon = pos.coords.longitude;
+      weatherCity = 'LOCAL';
+      document.getElementById('weather-status').textContent = 'Location: ' + weatherLat.toFixed(2) + ', ' + weatherLon.toFixed(2);
+      try {
+        const geo = await storage.reverseGeocode(weatherLat, weatherLon);
+        if (geo.city) {
+          weatherCity = geo.city;
+          document.getElementById('weather-city').value = geo.city;
+          document.getElementById('weather-status').textContent = 'Location: ' + geo.city;
+        }
+      } catch {}
+      storage.updateSettings({ weatherLat: String(weatherLat), weatherLon: String(weatherLon), weatherCity });
+    },
+    (err) => { document.getElementById('weather-status').textContent = 'Error: ' + err.message; }
+  );
+});
+document.getElementById('btn-weather-show').addEventListener('click', () => {
+  if (!weatherLat || !weatherLon) { document.getElementById('weather-status').textContent = 'No location set.'; return; }
+  document.getElementById('weather-status').textContent = 'Fetching weather...';
+  storage.displayWeather({ city: weatherCity || 'LOCAL', lat: weatherLat, lon: weatherLon, unit: weatherUnit }).then(() => {
+    document.getElementById('weather-status').textContent = 'Updated: ' + new Date().toLocaleTimeString();
+  }).catch(e => {
+    document.getElementById('weather-status').textContent = 'Error: ' + e.message;
+  });
+});
+document.getElementById('btn-weather-queue').addEventListener('click', () => {
+  storage.addQueueItem({ type: 'weather', config: '{}' }).then(() => loadQueue());
+});
+document.getElementById('weather-unit-f').addEventListener('click', () => {
+  weatherUnit = 'F';
+  document.getElementById('weather-unit-f').classList.add('active');
+  document.getElementById('weather-unit-c').classList.remove('active');
+  storage.updateSettings({ weatherUnit: 'F' });
+});
+document.getElementById('weather-unit-c').addEventListener('click', () => {
+  weatherUnit = 'C';
+  document.getElementById('weather-unit-c').classList.add('active');
+  document.getElementById('weather-unit-f').classList.remove('active');
+  storage.updateSettings({ weatherUnit: 'C' });
+});
+
+// --- Saved Messages ---
+document.getElementById('btn-save').addEventListener('click', async () => {
+  const text = document.getElementById('text-input').value;
+  if (!text.trim()) return;
+  const name = prompt('Name for this message:', text.trim().slice(0, 40));
+  if (name === null) return;
+  await storage.addMessage({ name: name.trim() || 'Untitled', text: text.trim(), alignH, alignV, fillColor, borderColor });
+  await loadSavedMessages();
+});
+document.getElementById('btn-queue-text').addEventListener('click', async () => {
+  const text = document.getElementById('text-input').value;
+  if (!text.trim()) return;
+  await storage.addQueueItem({
+    type: 'text',
+    config: JSON.stringify({ name: text.trim().slice(0, 40), text: text.trim(), alignH, alignV, fillColor, borderColor })
+  });
+  await loadQueue();
+});
+document.getElementById('saved-list').addEventListener('click', async (e) => {
+  if (e.target.classList.contains('queue-add')) {
+    const id = parseInt(e.target.dataset.id);
+    const entry = savedMessages.find(m => m.id === id);
+    if (!entry) return;
+    await storage.addQueueItem({
+      type: 'text',
+      config: JSON.stringify({ name: entry.name, text: entry.text, alignH: entry.align_h, alignV: entry.align_v, fillColor: entry.fill_color, borderColor: entry.border_color })
+    });
+    await loadQueue();
+  } else if (e.target.classList.contains('remove')) {
+    const id = parseInt(e.target.dataset.id);
+    await storage.deleteMessage(id);
+    await loadSavedMessages();
+  } else if (e.target.closest('.msg')) {
+    const msgEl = e.target.closest('.msg');
+    const id = parseInt(msgEl.dataset.id);
+    const entry = savedMessages.find(m => m.id === id);
+    if (!entry) return;
+    document.getElementById('text-input').value = entry.text;
+    if (entry.align_h) { alignH = entry.align_h; document.querySelectorAll('#align-h .align-btn').forEach(b => b.classList.toggle('active', b.dataset.val === alignH)); }
+    if (entry.align_v) { alignV = entry.align_v; document.querySelectorAll('#align-v .align-btn').forEach(b => b.classList.toggle('active', b.dataset.val === alignV)); }
+    fillColor = entry.fill_color || null;
+    borderColor = entry.border_color || null;
+    updateToolbarIndicator('btn-fill', fillColor);
+    updateToolbarIndicator('btn-border', borderColor);
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
+    document.querySelector('.tab[data-tab="text"]').classList.add('active');
+    document.getElementById('pane-text').classList.add('active');
+  }
+});
+document.getElementById('btn-saved-clear').addEventListener('click', async () => {
+  await storage.clearMessages();
+  await loadSavedMessages();
+});
+
+// --- Queue ---
+document.getElementById('queue-list').addEventListener('click', async (e) => {
+  if (e.target.classList.contains('remove')) {
+    const id = parseInt(e.target.dataset.id);
+    await storage.deleteQueueItem(id);
+    await loadQueue();
+  }
+});
+
+// Drag-to-reorder queue
+let dragFromIdx = null;
+const queueList = document.getElementById('queue-list');
+queueList.addEventListener('dragstart', (e) => {
+  const li = e.target.closest('.queue-item');
+  if (!li) return;
+  dragFromIdx = parseInt(li.dataset.idx);
+  li.classList.add('dragging');
+  e.dataTransfer.effectAllowed = 'move';
+});
+queueList.addEventListener('dragover', (e) => {
+  e.preventDefault();
+  const li = e.target.closest('.queue-item');
+  if (!li) return;
+  queueList.querySelectorAll('.drag-over').forEach(el => el.classList.remove('drag-over'));
+  li.classList.add('drag-over');
+});
+queueList.addEventListener('dragleave', (e) => {
+  const li = e.target.closest('.queue-item');
+  if (li) li.classList.remove('drag-over');
+});
+queueList.addEventListener('drop', async (e) => {
+  e.preventDefault();
+  const li = e.target.closest('.queue-item');
+  if (!li || dragFromIdx === null) return;
+  const toIdx = parseInt(li.dataset.idx);
+  if (toIdx === dragFromIdx) return;
+  const [moved] = queueItems.splice(dragFromIdx, 1);
+  const insertIdx = dragFromIdx < toIdx ? toIdx - 1 : toIdx;
+  queueItems.splice(insertIdx, 0, moved);
+  const ids = queueItems.map(item => item.id);
+  await storage.reorderQueue(ids);
+  renderQueue();
+  dragFromIdx = null;
+});
+queueList.addEventListener('dragend', () => {
+  queueList.querySelectorAll('.dragging, .drag-over').forEach(el => el.classList.remove('dragging', 'drag-over'));
+  dragFromIdx = null;
+});
+
+document.getElementById('btn-queue-start').addEventListener('click', () => {
+  if (queueRunning) {
+    storage.stopQueue();
+  } else {
+    storage.startQueue();
+  }
+});
+document.getElementById('btn-queue-clear').addEventListener('click', async () => {
+  await storage.clearQueue();
+  await loadQueue();
+});
+document.getElementById('queue-dwell').addEventListener('change', (e) => {
+  const val = Math.max(3, parseInt(e.target.value) || 12);
+  e.target.value = val;
+  storage.updateSettings({ queueDwellSec: String(val) });
+});
+
+// --- Settings ---
+document.getElementById('btn-resize').addEventListener('click', () => {
+  const r = Math.max(1, Math.min(12, parseInt(document.getElementById('cfg-rows').value) || 6));
+  const c = Math.max(6, Math.min(44, parseInt(document.getElementById('cfg-cols').value) || 22));
+  storage.updateSettings({ rows: String(r), cols: String(c) });
+});
+document.getElementById('chk-full-flip').addEventListener('change', (e) => {
+  storage.updateSettings({ fullFlip: String(e.target.checked) });
+});
+document.getElementById('chk-24h').addEventListener('change', (e) => {
+  storage.updateSettings({ is24h: String(e.target.checked) });
+});
+
+// Sound toggle/cycle
+document.getElementById('btn-sound').addEventListener('click', () => {
+  if (window.__STANDALONE__) {
+    // Simple on/off toggle for standalone
+    const current = settings.soundEnabled !== 'false';
+    storage.updateSettings({ soundEnabled: String(!current) });
+  } else {
+    // 4-way cycle for admin (display/admin/both/off)
+    const cycle = ['display', 'admin', 'both', 'off'];
+    const current = settings.soundDestination || 'display';
+    const next = cycle[(cycle.indexOf(current) + 1) % cycle.length];
+    storage.updateSettings({ soundDestination: next });
+  }
+});
+
+// Export / Import
+document.getElementById('btn-export').addEventListener('click', async () => {
+  const [s, msgs, items, cities] = await Promise.all([
+    storage.getSettings(),
+    storage.getMessages(),
+    storage.getQueueItems(),
+    storage.getWorldClockCities(),
+  ]);
   const exported = {
     version: 1,
     settings: {
-      rows: s.rows, cols: s.cols,
-      fullFlip: s.fullFlip, soundEnabled: s.soundEnabled,
+      rows: parseInt(s.rows) || 6,
+      cols: parseInt(s.cols) || 22,
+      fullFlip: s.fullFlip === 'true',
+      soundEnabled: s.soundDestination !== 'off',
     },
     queue: {
-      dwellTime: s.queueDwellSec,
-      items: (s.queue || []).map(item => {
-        if (item.type === 'saved') {
-          const out = { type: 'saved', name: item.name, text: item.text };
-          if (item.alignH) out.alignH = item.alignH;
-          if (item.alignV) out.alignV = item.alignV;
-          if (item.fillColor) out.fillColor = item.fillColor;
-          if (item.borderColor) out.borderColor = item.borderColor;
+      dwellTime: parseInt(s.queueDwellSec) || 12,
+      items: items.map(item => {
+        const config = JSON.parse(item.config || '{}');
+        if (item.type === 'text') {
+          const out = { type: 'saved', name: config.name || '', text: config.text || '' };
+          if (config.alignH) out.alignH = config.alignH;
+          if (config.alignV) out.alignV = config.alignV;
+          if (config.fillColor) out.fillColor = config.fillColor;
+          if (config.borderColor) out.borderColor = config.borderColor;
           return out;
         }
         return { type: item.type };
       }),
     },
-    saved: (s.savedMessages || []).map(m => {
+    saved: msgs.map(m => {
       const out = { name: m.name, text: m.text };
-      if (m.alignH) out.alignH = m.alignH;
-      if (m.alignV) out.alignV = m.alignV;
-      if (m.fillColor) out.fillColor = m.fillColor;
-      if (m.borderColor) out.borderColor = m.borderColor;
+      if (m.align_h && m.align_h !== 'center') out.alignH = m.align_h;
+      if (m.align_v && m.align_v !== 'middle') out.alignV = m.align_v;
+      if (m.fill_color) out.fillColor = m.fill_color;
+      if (m.border_color) out.borderColor = m.border_color;
       return out;
     }),
     clock: {
-      is24h: s.is24h || false,
+      is24h: s.is24h === 'true',
       timezone: s.clockTimezone || '',
     },
-    worldClock: s.worldClock || { cities: [], customCities: [] },
-    weather: s.weather || {},
+    worldClock: {
+      cities: cities.filter(c => !c.is_custom && c.is_selected).map(c => c.city),
+      customCities: cities.filter(c => c.is_custom).map(c => ({ name: c.city, tz: c.timezone })),
+    },
+    weather: {
+      lat: parseFloat(s.weatherLat) || null,
+      lon: parseFloat(s.weatherLon) || null,
+      city: s.weatherCity || '',
+      unit: s.weatherUnit || 'F',
+      autoRefresh: s.weatherAutoRefresh === 'true',
+      refreshMin: parseInt(s.weatherRefreshMin) || 15,
+    },
   };
   const blob = new Blob([JSON.stringify(exported, null, 2)], { type: 'application/json' });
   const a = document.createElement('a');
@@ -2190,658 +2768,166 @@ function exportConfig() {
   a.download = 'flippyboard-config.json';
   a.click();
   URL.revokeObjectURL(a.href);
-}
+});
 
-function importConfig(file) {
+const importFileInput = document.getElementById('import-file');
+document.getElementById('btn-import').addEventListener('click', () => importFileInput.click());
+importFileInput.addEventListener('change', async (e) => {
+  if (!e.target.files[0]) return;
   const reader = new FileReader();
-  reader.onload = () => {
+  reader.onload = async () => {
     try {
       const data = JSON.parse(reader.result);
       if (typeof data !== 'object' || data === null || data.version !== 1) {
         alert('Invalid or unsupported config file.');
         return;
       }
-      const s = {};
+      // Import settings
       if (data.settings) {
-        if (data.settings.rows) s.rows = data.settings.rows;
-        if (data.settings.cols) s.cols = data.settings.cols;
-        if (typeof data.settings.fullFlip === 'boolean') s.fullFlip = data.settings.fullFlip;
-        if (typeof data.settings.soundEnabled === 'boolean') s.soundEnabled = data.settings.soundEnabled;
+        await storage.updateSettings({
+          rows: String(data.settings.rows || 6),
+          cols: String(data.settings.cols || 22),
+          fullFlip: String(data.settings.fullFlip ?? true),
+        });
       }
       if (data.clock) {
-        if (typeof data.clock.is24h === 'boolean') s.is24h = data.clock.is24h;
-        if (data.clock.timezone != null) s.clockTimezone = data.clock.timezone;
+        await storage.updateSettings({
+          is24h: String(data.clock.is24h ?? false),
+          clockTimezone: data.clock.timezone || '',
+        });
+      }
+      if (data.weather) {
+        await storage.updateSettings({
+          weatherLat: String(data.weather.lat ?? 'null'),
+          weatherLon: String(data.weather.lon ?? 'null'),
+          weatherCity: data.weather.city || '',
+          weatherUnit: data.weather.unit || 'F',
+          weatherAutoRefresh: String(data.weather.autoRefresh ?? false),
+          weatherRefreshMin: String(data.weather.refreshMin || 15),
+        });
       }
       if (data.queue) {
-        if (data.queue.dwellTime) s.queueDwellSec = data.queue.dwellTime;
-        if (Array.isArray(data.queue.items)) s.queue = data.queue.items;
+        await storage.updateSettings({ queueDwellSec: String(data.queue.dwellTime || 12) });
+        await storage.clearQueue();
+        if (Array.isArray(data.queue.items)) {
+          for (const item of data.queue.items) {
+            if (item.type === 'saved') {
+              const config = { name: item.name, text: item.text };
+              if (item.alignH) config.alignH = item.alignH;
+              if (item.alignV) config.alignV = item.alignV;
+              if (item.fillColor) config.fillColor = item.fillColor;
+              if (item.borderColor) config.borderColor = item.borderColor;
+              await storage.addQueueItem({ type: 'text', config: JSON.stringify(config) });
+            } else {
+              await storage.addQueueItem({ type: item.type, config: '{}' });
+            }
+          }
+        }
       }
-      if (Array.isArray(data.saved)) s.savedMessages = data.saved;
-      if (data.worldClock) s.worldClock = data.worldClock;
-      if (data.weather) s.weather = data.weather;
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(s));
-      loadState();
-      buildBoard();
-      renderSaved();
-      renderWorldClockCityPicker();
-      updateToolbarIndicator('btn-fill', fillColor);
-      updateToolbarIndicator('btn-border', borderColor);
-      sizeTiles();
-    } catch {
-      alert('Failed to parse config file.');
+      // Import saved messages
+      if (Array.isArray(data.saved)) {
+        await storage.clearMessages();
+        for (const m of data.saved) {
+          await storage.addMessage({
+            name: m.name, text: m.text,
+            alignH: m.alignH || 'center', alignV: m.alignV || 'middle',
+            fillColor: m.fillColor || '', borderColor: m.borderColor || '',
+          });
+        }
+      }
+      // Import world clock cities
+      if (data.worldClock) {
+        const existing = await storage.getWorldClockCities();
+        const selectedNames = new Set(data.worldClock.cities || []);
+        // Toggle built-in cities to match export; remove existing custom cities
+        for (const c of existing) {
+          if (c.is_custom) {
+            await storage.deleteWorldClockCity(c.id);
+          } else {
+            const shouldSelect = selectedNames.has(c.city);
+            if ((!!c.is_selected) !== shouldSelect) {
+              await storage.updateWorldClockCity(c.id, { selected: shouldSelect });
+            }
+          }
+        }
+        // Add custom cities from import
+        for (const c of (data.worldClock.customCities || [])) {
+          await storage.addWorldClockCity({ city: c.name, timezone: c.tz, isCustom: true });
+        }
+      }
+      // Reload everything
+      await Promise.all([loadSavedMessages(), loadQueue(), loadWorldClockCities()]);
+      location.reload();
+    } catch (err) {
+      console.error(err);
+      alert('Failed to import config file.');
     }
   };
-  reader.readAsText(file);
+  reader.readAsText(e.target.files[0]);
+  e.target.value = '';
+});
+
+// --- Resize handler ---
+window.addEventListener('resize', () => board.sizeTiles());
+document.addEventListener('fullscreenchange', () => board.sizeTiles());
+
+// --- Visibility handling ---
+document.addEventListener('visibilitychange', () => {
+  if (!document.hidden) {
+    resumeAudioContext();
+    board.forceResetAll();
+    if (clockConfig) { lastClockStr = ''; }
+    if (worldClockConfig) { lastWorldClockStr = ''; }
+  }
+});
+
+// --- Initialize ---
+{
+  // In standalone mode, load initial settings and apply them
+  storage.getSettings().then(s => {
+    settings = s;
+    applySettings(s);
+  });
 }
+loadSavedMessages();
+loadQueue();
+loadWorldClockCities();
 
-// ═══════════════════════════════════════
-//  BROADCAST CHANNEL
-// ═══════════════════════════════════════
-const channel = new BroadcastChannel('splitflap');
-channel.onmessage = (e) => {
-  const d = e.data;
-  if (!d) return;
-  stopClock();
-  stopWorldClock();
-  stopQueue();
-  if (d.clear) { clearBoard(); return; }
-  if (d.rows && Array.isArray(d.rows)) { setBoard(d.rows); return; }
-  if (d.text) { setBoardText(d.text); return; }
-};
 
+// --- Standalone extras ---
+
+// BroadcastChannel listener
+try {
+  const channel = new BroadcastChannel('splitflap');
+  channel.onmessage = (e) => {
+    const d = e.data;
+    if (!d) return;
+    storage.stopQueue();
+    if (d.clear) { storage.displayClear(); return; }
+    if (d.rows && Array.isArray(d.rows)) { handleWsMessage({ action: 'setRows', rows: d.rows }); return; }
+    if (d.text) { storage.displayText({ text: d.text }); return; }
+  };
+} catch {}
+
+// postMessage listener (for iframe embedding)
 window.addEventListener('message', (e) => {
   const d = e.data;
   if (!d || typeof d !== 'object') return;
-  stopClock();
-  stopWorldClock();
-  stopQueue();
-  if (d.clear) { clearBoard(); return; }
-  if (d.rows && Array.isArray(d.rows)) { setBoard(d.rows); return; }
-  if (d.text) { setBoardText(d.text); return; }
+  storage.stopQueue();
+  if (d.clear) { storage.displayClear(); return; }
+  if (d.rows && Array.isArray(d.rows)) { handleWsMessage({ action: 'setRows', rows: d.rows }); return; }
+  if (d.text) { storage.displayText({ text: d.text }); return; }
 });
 
-// ═══════════════════════════════════════
-//  UI WIRING
-// ═══════════════════════════════════════
-document.addEventListener('DOMContentLoaded', () => {
-  // Load persisted state before building board (rows/cols may change)
-  const hadSavedState = loadState();
-  if (!hadSavedState) {
-    loadDefaults();
-    loadState();
+// Fullscreen button
+document.getElementById('btn-fullscreen').addEventListener('click', () => {
+  if (!document.fullscreenElement) {
+    document.documentElement.requestFullscreen().catch(() => {});
+  } else {
+    document.exitFullscreen();
   }
-  buildBoard();
-  renderSaved();
-
-  // Init audio on first interaction
-  document.body.addEventListener('click', () => initAudio(), { once: true });
-
-  // Tabs
-  document.querySelectorAll('.tab').forEach(tab => {
-    tab.addEventListener('click', () => {
-      document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-      document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
-      tab.classList.add('active');
-      document.getElementById('pane-' + tab.dataset.tab).classList.add('active');
-    });
-  });
-
-  // Text input
-  document.getElementById('btn-send').addEventListener('click', () => {
-    stopClock(); stopWorldClock(); stopQueue();
-    const text = document.getElementById('text-input').value;
-    if (text.trim()) setBoardText(text);
-  });
-
-  document.getElementById('text-input').addEventListener('keydown', (e) => {
-    if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) {
-      e.preventDefault();
-      document.getElementById('btn-send').click();
-    }
-  });
-
-  document.getElementById('btn-clear').addEventListener('click', () => {
-    stopClock(); stopWorldClock(); stopQueue();
-    clearBoard();
-  });
-
-  // Color palette
-  const swatchContainer = document.getElementById('color-swatches');
-  for (const [ch, info] of Object.entries(COLOR_TILES)) {
-    const swatch = document.createElement('div');
-    swatch.className = 'color-swatch';
-    swatch.style.background = info.upper;
-    swatch.title = info.name + ' {' + info.code + '}';
-    swatch.dataset.code = '{' + info.code + '}';
-    swatch.addEventListener('click', (e) => {
-      e.stopPropagation();
-      const ta = document.getElementById('text-input');
-      const start = ta.selectionStart;
-      const end = ta.selectionEnd;
-      const code = '{' + info.code + '}';
-      ta.value = ta.value.substring(0, start) + code + ta.value.substring(end);
-      ta.selectionStart = ta.selectionEnd = start + code.length;
-      ta.focus();
-    });
-    swatchContainer.appendChild(swatch);
-  }
-
-  // Fill & Border — non-destructive setters
-  function updateToolbarIndicator(btnId, colorCode) {
-    const btn = document.getElementById(btnId);
-    let dot = btn.querySelector('.toolbar-indicator');
-    if (!colorCode) {
-      if (dot) dot.remove();
-      return;
-    }
-    if (!dot) {
-      dot = document.createElement('span');
-      dot.className = 'toolbar-indicator';
-      btn.appendChild(dot);
-    }
-    const ch = CODE_TO_COLOR[colorCode];
-    dot.style.background = COLOR_TILES[ch].upper;
-  }
-
-  function applyFill(colorCode) {
-    fillColor = colorCode === null ? null : (fillColor === colorCode ? null : colorCode);
-    updateToolbarIndicator('btn-fill', fillColor);
-    persistState();
-  }
-
-  function applyBorder(colorCode) {
-    borderColor = colorCode === null ? null : (borderColor === colorCode ? null : colorCode);
-    updateToolbarIndicator('btn-border', borderColor);
-    persistState();
-  }
-
-  function buildActionSwatches(containerId, onClick) {
-    const container = document.getElementById(containerId);
-    // "None" swatch to clear the setting
-    const none = document.createElement('div');
-    none.className = 'color-swatch swatch-none';
-    none.title = 'None';
-    none.addEventListener('click', () => {
-      onClick(null);
-      document.querySelectorAll('.toolbar-dropdown.open').forEach(d => d.classList.remove('open'));
-    });
-    container.appendChild(none);
-    for (const [ch, info] of Object.entries(COLOR_TILES)) {
-      const swatch = document.createElement('div');
-      swatch.className = 'color-swatch';
-      swatch.style.background = info.upper;
-      swatch.title = info.name;
-      swatch.addEventListener('click', () => {
-        onClick(info.code);
-        document.querySelectorAll('.toolbar-dropdown.open').forEach(d => d.classList.remove('open'));
-      });
-      container.appendChild(swatch);
-    }
-  }
-
-  buildActionSwatches('fill-swatches', applyFill);
-  buildActionSwatches('border-swatches', applyBorder);
-
-  // Restore toolbar indicators for fill/border from persisted state
-  updateToolbarIndicator('btn-fill', fillColor);
-  updateToolbarIndicator('btn-border', borderColor);
-
-  // Insert menu - insert formatting codes at cursor (or line start for alignment codes)
-  const LINE_PREFIX_CODES = new Set(['{<}', '{C}', '{>}']);
-  document.querySelectorAll('.insert-menu-item').forEach(item => {
-    item.addEventListener('click', (e) => {
-      e.stopPropagation();
-      const ta = document.getElementById('text-input');
-      const code = item.dataset.code;
-      let insertAt, cursorAfter;
-      if (LINE_PREFIX_CODES.has(code)) {
-        const lineStart = ta.value.lastIndexOf('\n', ta.selectionStart - 1) + 1;
-        insertAt = lineStart;
-        cursorAfter = ta.selectionStart + code.length;
-      } else {
-        insertAt = ta.selectionStart;
-        cursorAfter = insertAt + code.length;
-      }
-      ta.value = ta.value.substring(0, insertAt) + code + ta.value.substring(LINE_PREFIX_CODES.has(code) ? insertAt : ta.selectionEnd);
-      ta.selectionStart = ta.selectionEnd = cursorAfter;
-      ta.focus();
-      document.querySelectorAll('.toolbar-dropdown.open').forEach(d => d.classList.remove('open'));
-    });
-  });
-
-  // Toolbar dropdown toggles
-  document.querySelectorAll('.toolbar-dropdown > .toolbar-btn').forEach(btn => {
-    btn.addEventListener('click', (e) => {
-      e.stopPropagation();
-      const dd = btn.parentElement;
-      const wasOpen = dd.classList.contains('open');
-      document.querySelectorAll('.toolbar-dropdown.open').forEach(d => d.classList.remove('open'));
-      if (!wasOpen) dd.classList.add('open');
-    });
-  });
-  document.addEventListener('click', () => {
-    document.querySelectorAll('.toolbar-dropdown.open').forEach(d => d.classList.remove('open'));
-  });
-
-  // Alignment toggles
-  function wireAlignGroup(id, setter) {
-    const group = document.getElementById(id);
-    group.querySelectorAll('.align-btn').forEach(btn => {
-      btn.addEventListener('click', () => {
-        group.querySelectorAll('.align-btn').forEach(b => b.classList.remove('active'));
-        btn.classList.add('active');
-        setter(btn.dataset.val);
-      });
-    });
-  }
-  wireAlignGroup('align-h', v => { alignH = v; persistState(); });
-  wireAlignGroup('align-v', v => { alignV = v; persistState(); });
-
-  // Resize
-  document.getElementById('btn-resize').addEventListener('click', () => {
-    const r = Math.max(1, Math.min(12, parseInt(document.getElementById('cfg-rows').value) || 6));
-    const c = Math.max(6, Math.min(44, parseInt(document.getElementById('cfg-cols').value) || 22));
-    rows = r; cols = c;
-    document.getElementById('cfg-rows').value = r;
-    document.getElementById('cfg-cols').value = c;
-    buildBoard();
-    persistState();
-  });
-
-  // Full flip toggle
-  document.getElementById('chk-full-flip').addEventListener('change', (e) => {
-    fullFlip = e.target.checked;
-    persistState();
-  });
-
-  // Export / Import
-  const importFileInput = document.getElementById('import-file');
-  document.getElementById('btn-export').addEventListener('click', exportConfig);
-  document.getElementById('btn-import').addEventListener('click', () => importFileInput.click());
-  importFileInput.addEventListener('change', (e) => {
-    if (e.target.files[0]) importConfig(e.target.files[0]);
-    e.target.value = '';
-  });
-
-  // Clock
-  document.getElementById('btn-clock-toggle').addEventListener('click', () => {
-    clockInterval ? stopClock() : startClock();
-  });
-  document.getElementById('chk-24h').addEventListener('change', (e) => {
-    is24h = e.target.checked;
-    if (clockInterval) { lastClockStr = ''; updateClock(); }
-    if (worldClockInterval) { lastWorldClockStr = ''; updateWorldClock(); }
-    persistState();
-  });
-
-  // Clock timezone
-  const clockTzInput = document.getElementById('clock-timezone');
-  function applyClockTimezone() {
-    const val = clockTzInput.value.trim();
-    if (val) {
-      // Extract IANA timezone from display format "City (Timezone)" or raw IANA string
-      const match = val.match(/\(([^)]+)\)$/);
-      const tz = match ? match[1] : val;
-      try {
-        Intl.DateTimeFormat('en-US', { timeZone: tz }).format();
-        clockTimezone = tz;
-      } catch {
-        clockTimezone = '';
-        clockTzInput.value = '';
-      }
-    } else {
-      clockTimezone = '';
-    }
-    persistState();
-    if (clockInterval) { lastClockStr = ''; updateClock(); }
-  }
-  clockTzInput.addEventListener('change', applyClockTimezone);
-  clockTzInput.addEventListener('blur', applyClockTimezone);
-
-  setupCityAutocomplete(clockTzInput, (result) => {
-    clockTimezone = result.timezone;
-    clockTzInput.value = result.name + ' (' + result.timezone + ')';
-    persistState();
-    if (clockInterval) { lastClockStr = ''; updateClock(); }
-  });
-
-  // World Clock
-  document.getElementById('btn-worldclock-toggle').addEventListener('click', () => {
-    worldClockInterval ? stopWorldClock() : startWorldClock();
-  });
-  document.getElementById('btn-worldclock-random').addEventListener('click', () => {
-    pickRandomWorldClockCities();
-    renderWorldClockCityPicker();
-    persistState();
-    if (worldClockInterval) { lastWorldClockStr = ''; updateWorldClock(); }
-  });
-
-  // Add custom city – autocomplete on name input
-  {
-    const wcNameInput = document.getElementById('worldclock-custom-name');
-    const wcTzInput = document.getElementById('worldclock-custom-tz');
-    setupCityAutocomplete(wcNameInput, (result) => {
-      wcNameInput.value = result.name + (result.admin1 ? ', ' + result.admin1 : '');
-      wcTzInput.value = result.timezone;
-    });
-  }
-  document.getElementById('btn-worldclock-add-custom').addEventListener('click', () => {
-    const nameInput = document.getElementById('worldclock-custom-name');
-    const tzInput = document.getElementById('worldclock-custom-tz');
-    const name = nameInput.value.trim();
-    const tz = tzInput.value.trim();
-    if (!name) return;
-    if (!tz) return;
-    try {
-      Intl.DateTimeFormat('en-US', { timeZone: tz }).format();
-    } catch {
-      alert('Invalid timezone: ' + tz);
-      return;
-    }
-    customWorldCities.push({ city: name, tz });
-    nameInput.value = '';
-    tzInput.value = '';
-    renderWorldClockCityPicker();
-    persistState();
-  });
-
-  renderWorldClockCityPicker();
-
-  // Queue — add-to-queue buttons on each tab
-  document.getElementById('btn-clock-queue').addEventListener('click', () => {
-    addToQueue({ type: 'clock' });
-  });
-  document.getElementById('btn-worldclock-queue').addEventListener('click', () => {
-    addToQueue({ type: 'worldclock' });
-  });
-  document.getElementById('btn-weather-queue').addEventListener('click', () => {
-    addToQueue({ type: 'weather' });
-  });
-
-  document.getElementById('queue-list').addEventListener('click', (e) => {
-    if (e.target.classList.contains('remove')) {
-      removeFromQueue(parseInt(e.target.dataset.idx));
-    }
-  });
-
-  // Drag-to-reorder queue items
-  let dragFromIdx = null;
-  const queueList = document.getElementById('queue-list');
-  queueList.addEventListener('dragstart', (e) => {
-    const li = e.target.closest('.queue-item');
-    if (!li) return;
-    dragFromIdx = parseInt(li.dataset.idx);
-    li.classList.add('dragging');
-    e.dataTransfer.effectAllowed = 'move';
-  });
-  queueList.addEventListener('dragover', (e) => {
-    e.preventDefault();
-    const li = e.target.closest('.queue-item');
-    if (!li) return;
-    queueList.querySelectorAll('.drag-over').forEach(el => el.classList.remove('drag-over'));
-    li.classList.add('drag-over');
-  });
-  queueList.addEventListener('dragleave', (e) => {
-    const li = e.target.closest('.queue-item');
-    if (li) li.classList.remove('drag-over');
-  });
-  queueList.addEventListener('drop', (e) => {
-    e.preventDefault();
-    const li = e.target.closest('.queue-item');
-    if (!li || dragFromIdx === null) return;
-    const toIdx = parseInt(li.dataset.idx);
-    if (toIdx === dragFromIdx) return;
-    const [moved] = queue.splice(dragFromIdx, 1);
-    const insertIdx = dragFromIdx < toIdx ? toIdx - 1 : toIdx;
-    queue.splice(insertIdx, 0, moved);
-    if (queueTimeout !== null) {
-      if (dragFromIdx === queueIdx) queueIdx = insertIdx;
-      else if (dragFromIdx < queueIdx && insertIdx >= queueIdx) queueIdx--;
-      else if (dragFromIdx > queueIdx && insertIdx <= queueIdx) queueIdx++;
-    }
-    renderQueue();
-    persistState();
-    dragFromIdx = null;
-  });
-  queueList.addEventListener('dragend', () => {
-    queueList.querySelectorAll('.dragging, .drag-over').forEach(el => {
-      el.classList.remove('dragging', 'drag-over');
-    });
-    dragFromIdx = null;
-  });
-
-  document.getElementById('btn-queue-start').addEventListener('click', () => {
-    queueTimeout !== null ? stopQueue() : startQueue();
-    persistState();
-  });
-  document.getElementById('btn-queue-clear').addEventListener('click', () => {
-    stopQueue();
-    queue = [];
-    renderQueue();
-    persistState();
-  });
-
-  // Weather
-  document.getElementById('btn-weather-search').addEventListener('click', async () => {
-    const city = document.getElementById('weather-city').value.trim();
-    if (!city) { weatherStatus('Enter a city name.'); return; }
-    weatherStatus('Searching...');
-    try {
-      const loc = await geocodeCity(city);
-      weatherLat = loc.lat;
-      weatherLon = loc.lon;
-      weatherCity = loc.name + (loc.admin ? ', ' + loc.admin : '');
-      document.getElementById('weather-city').value = weatherCity;
-      weatherStatus('Found: ' + weatherCity + ' (' + loc.lat.toFixed(2) + ', ' + loc.lon.toFixed(2) + ')');
-      persistState();
-    } catch (e) {
-      weatherStatus('Error: ' + e.message);
-    }
-  });
-  document.getElementById('weather-city').addEventListener('keydown', (e) => {
-    if (e.key === 'Enter') { e.preventDefault(); document.getElementById('btn-weather-search').click(); }
-  });
-  document.getElementById('btn-weather-locate').addEventListener('click', () => {
-    if (!navigator.geolocation) { weatherStatus('Geolocation not supported.'); return; }
-    weatherStatus('Detecting location...');
-    navigator.geolocation.getCurrentPosition(
-      async (pos) => {
-        weatherLat = pos.coords.latitude;
-        weatherLon = pos.coords.longitude;
-        weatherCity = 'LOCAL';
-        weatherStatus('Location: ' + weatherLat.toFixed(2) + ', ' + weatherLon.toFixed(2));
-        // Reverse geocode to get city name
-        try {
-          const resp = await fetch(`https://nominatim.openstreetmap.org/reverse?lat=${weatherLat}&lon=${weatherLon}&format=json&zoom=10`);
-          if (resp.ok) {
-            const geo = await resp.json();
-            const name = geo.address?.city || geo.address?.town || geo.address?.village || geo.address?.municipality || '';
-            if (name) {
-              weatherCity = name;
-              document.getElementById('weather-city').value = name;
-              weatherStatus('Location: ' + name);
-            }
-          }
-        } catch {}
-        persistState();
-      },
-      (err) => { weatherStatus('Error: ' + err.message); }
-    );
-  });
-  document.getElementById('btn-weather-show').addEventListener('click', () => {
-    showWeather();
-    if (weatherAutoRefresh) startWeatherAutoRefresh();
-  });
-  document.getElementById('chk-weather-auto').addEventListener('change', (e) => {
-    weatherAutoRefresh = e.target.checked;
-    if (weatherAutoRefresh) startWeatherAutoRefresh(); else stopWeatherAutoRefresh();
-    persistState();
-  });
-  document.getElementById('weather-refresh-min').addEventListener('change', (e) => {
-    weatherRefreshMin = Math.max(5, parseInt(e.target.value) || 15);
-    e.target.value = weatherRefreshMin;
-    if (weatherAutoRefresh) startWeatherAutoRefresh();
-    persistState();
-  });
-  document.getElementById('weather-unit-f').addEventListener('click', () => {
-    weatherUnit = 'F';
-    document.getElementById('weather-unit-f').classList.add('active');
-    document.getElementById('weather-unit-c').classList.remove('active');
-    persistState();
-  });
-  document.getElementById('weather-unit-c').addEventListener('click', () => {
-    weatherUnit = 'C';
-    document.getElementById('weather-unit-c').classList.add('active');
-    document.getElementById('weather-unit-f').classList.remove('active');
-    persistState();
-  });
-
-  // Save message
-  document.getElementById('btn-save').addEventListener('click', () => {
-    const text = document.getElementById('text-input').value;
-    if (text.trim()) saveMessage(text);
-  });
-
-  // Add to queue from text tab
-  document.getElementById('btn-queue-text').addEventListener('click', () => {
-    const text = document.getElementById('text-input').value;
-    if (!text.trim()) return;
-    addToQueue({ type: 'saved', name: text.trim().slice(0, 40), text: text.trim(), alignH, alignV, fillColor, borderColor });
-  });
-
-  // Saved messages pane
-  document.getElementById('saved-list').addEventListener('click', (e) => {
-    if (e.target.classList.contains('queue-add')) {
-      const idx = parseInt(e.target.dataset.idx);
-      const entry = savedMessages[idx];
-      if (!entry) return;
-      const name = typeof entry === 'string' ? entry.slice(0, 40) : entry.name;
-      const text = typeof entry === 'string' ? entry : entry.text;
-      addToQueue({ type: 'saved', name, text, alignH: entry.alignH, alignV: entry.alignV, fillColor: entry.fillColor, borderColor: entry.borderColor });
-    } else if (e.target.classList.contains('remove')) {
-      removeSaved(parseInt(e.target.dataset.idx));
-    } else if (e.target.closest('.msg')) {
-      // Load into text input and switch to Text tab
-      const msgEl = e.target.closest('.msg');
-      const idx = parseInt(msgEl.dataset.idx);
-      const entry = savedMessages[idx];
-      document.getElementById('text-input').value = typeof entry === 'string' ? entry : entry.text;
-      // Restore saved alignment
-      if (entry.alignH) {
-        alignH = entry.alignH;
-        document.querySelectorAll('#align-h .align-btn').forEach(b => b.classList.toggle('active', b.dataset.val === alignH));
-      }
-      if (entry.alignV) {
-        alignV = entry.alignV;
-        document.querySelectorAll('#align-v .align-btn').forEach(b => b.classList.toggle('active', b.dataset.val === alignV));
-      }
-      // Restore saved fill/border
-      fillColor = entry.fillColor || null;
-      borderColor = entry.borderColor || null;
-      updateToolbarIndicator('btn-fill', fillColor);
-      updateToolbarIndicator('btn-border', borderColor);
-      document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-      document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
-      document.querySelector('.tab[data-tab="text"]').classList.add('active');
-      document.getElementById('pane-text').classList.add('active');
-    }
-  });
-  document.getElementById('btn-saved-clear').addEventListener('click', () => {
-    savedMessages = [];
-    persistState();
-    renderSaved();
-  });
-
-  // Sound toggle
-  const btnSound = document.getElementById('btn-sound');
-  btnSound.addEventListener('click', () => {
-    soundEnabled = !soundEnabled;
-    btnSound.classList.toggle('active', soundEnabled);
-    document.getElementById('sound-icon').setAttribute('d',
-      soundEnabled
-        ? 'M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z'
-        : 'M16.5 12c0-1.77-1.02-3.29-2.5-4.03v2.21l2.45 2.45c.03-.2.05-.41.05-.63zm2.5 0c0 .94-.2 1.82-.54 2.64l1.51 1.51C20.63 14.91 21 13.5 21 12c0-4.28-2.99-7.86-7-8.77v2.06c2.89.86 5 3.54 5 6.71zM4.27 3L3 4.27 7.73 9H3v6h4l5 5v-6.73l4.25 4.25c-.67.52-1.42.93-2.25 1.18v2.06c1.38-.31 2.63-.95 3.69-1.81L19.73 21 21 19.73l-9-9L4.27 3zM12 4L9.91 6.09 12 8.18V4z'
-    );
-    persistState();
-  });
-  btnSound.classList.toggle('active', soundEnabled);
-
-  // Fullscreen
-  document.getElementById('btn-fullscreen').addEventListener('click', () => {
-    if (document.fullscreenElement) {
-      document.exitFullscreen();
-    } else {
-      document.documentElement.requestFullscreen().catch(() => {});
-    }
-  });
-
-  // Resize handler
-  window.addEventListener('resize', () => sizeTiles());
-  document.addEventListener('fullscreenchange', () => sizeTiles());
-
-  // Handle tab visibility changes to prevent stuck animations and interval buildup
-  let queueWasPaused = false;
-  let clockWasPaused = false;
-  let worldClockWasPaused = false;
-  document.addEventListener('visibilitychange', () => {
-    if (document.hidden) {
-      // Pause timers to prevent callback buildup in background tabs
-      if (queueTimeout !== null) {
-        clearTimeout(queueTimeout);
-        queueTimeout = null;
-        queueWasPaused = true;
-      }
-      if (clockInterval) {
-        clearInterval(clockInterval);
-        clockInterval = null;
-        clockWasPaused = true;
-      }
-      if (worldClockInterval) {
-        clearInterval(worldClockInterval);
-        worldClockInterval = null;
-        worldClockWasPaused = true;
-      }
-    } else {
-      // Resume AudioContext if browser suspended it
-      if (audioCtx && audioCtx.state === 'suspended') {
-        audioCtx.resume();
-      }
-      // Force-reset any tiles stuck mid-flip
-      for (const row of tiles) {
-        for (const t of row) t.forceReset();
-      }
-      // Restart queue if it was running
-      if (queueWasPaused && queue.length > 0) {
-        queueWasPaused = false;
-        queueTimeout = -1; // sentinel: queue is active
-        showQueueMessage().then(() => scheduleNextQueueItem());
-      }
-      // Restart clock if it was running
-      if (clockWasPaused) {
-        clockWasPaused = false;
-        lastClockStr = '';
-        clockInterval = setInterval(updateClock, 1000);
-        updateClock();
-      }
-      // Restart world clock if it was running
-      if (worldClockWasPaused) {
-        worldClockWasPaused = false;
-        lastWorldClockStr = '';
-        worldClockInterval = setInterval(updateWorldClock, 1000);
-        updateWorldClock();
-      }
-    }
-  });
-
-  // On fresh load, auto-start the queue; otherwise show a welcome message
-  setTimeout(() => {
-    if (!hadSavedState && queue.length > 0) {
-      startQueue();
-    } else {
-      setBoardText('FLIPPY BOARD\nREADY');
-    }
-  }, 300);
 });
+
 </script>
 </body>
 </html>

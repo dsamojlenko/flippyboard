@@ -4,7 +4,8 @@
   "description": "Split-flap display board with web-based management",
   "main": "server.js",
   "scripts": {
-    "start": "node server.js"
+    "start": "node server.js",
+    "build": "node scripts/build-standalone.js"
   },
   "dependencies": {
     "better-sqlite3": "^11.0.0",

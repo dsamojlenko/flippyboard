@@ -255,6 +255,7 @@
 import { Board, formatClockLines, formatWorldClockLines, formatWeatherLines } from '/shared/board.js';
 import { initAudio, setSoundEnabled, resumeAudioContext } from '/shared/audio.js';
 import { COLOR_TILES, CODE_TO_COLOR } from '/shared/chars.js';
+import { StorageAPI } from '/shared/storage-api.js';
 
 // --- State ---
 let settings = {};
@@ -271,21 +272,19 @@ let board = new Board(boardEl, { rows: 6, cols: 22, fullFlip: true });
 
 document.body.addEventListener('click', () => initAudio(), { once: true });
 
+// --- Storage backend ---
+// In admin mode this is StorageAPI; the build script swaps it for StorageLocal.
+const storage = new StorageAPI();
+
 // --- Helpers ---
 function shouldPlaySound(s) {
+  if (window.__STANDALONE__) return s.soundEnabled !== 'false';
   const dest = s.soundDestination || 'display';
   return dest === 'admin' || dest === 'both';
 }
 
 function escHtml(s) {
   return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
-}
-
-async function api(method, path, body) {
-  const opts = { method, headers: { 'Content-Type': 'application/json' } };
-  if (body !== undefined) opts.body = JSON.stringify(body);
-  const res = await fetch('/api' + path, opts);
-  return res.json();
 }
 
 // --- WebSocket for live preview ---
@@ -404,12 +403,19 @@ function applySettings(s) {
   updateToolbarIndicator('btn-fill', fillColor);
   updateToolbarIndicator('btn-border', borderColor);
 
-  const dest = s.soundDestination || 'display';
-  const labels = { display: 'Display', admin: 'Admin', both: 'Both', off: 'Off' };
-  document.getElementById('sound-label').textContent = 'Sound: ' + (labels[dest] || 'Display');
-  document.getElementById('btn-sound').classList.toggle('active', dest !== 'off');
+  let soundOn;
+  if (window.__STANDALONE__) {
+    soundOn = s.soundEnabled !== 'false';
+    document.getElementById('sound-label').textContent = 'Sound: ' + (soundOn ? 'On' : 'Off');
+  } else {
+    const dest = s.soundDestination || 'display';
+    const labels = { display: 'Display', admin: 'Admin', both: 'Both', off: 'Off' };
+    document.getElementById('sound-label').textContent = 'Sound: ' + (labels[dest] || 'Display');
+    soundOn = dest !== 'off';
+  }
+  document.getElementById('btn-sound').classList.toggle('active', soundOn);
   document.getElementById('sound-icon').setAttribute('d',
-    dest !== 'off'
+    soundOn
       ? 'M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z'
       : 'M16.5 12c0-1.77-1.02-3.29-2.5-4.03v2.21l2.45 2.45c.03-.2.05-.41.05-.63zm2.5 0c0 .94-.2 1.82-.54 2.64l1.51 1.51C20.63 14.91 21 13.5 21 12c0-4.28-2.99-7.86-7-8.77v2.06c2.89.86 5 3.54 5 6.71zM4.27 3L3 4.27 7.73 9H3v6h4l5 5v-6.73l4.25 4.25c-.67.52-1.42.93-2.25 1.18v2.06c1.38-.31 2.63-.95 3.69-1.81L19.73 21 21 19.73l-9-9L4.27 3zM12 4L9.91 6.09 12 8.18V4z'
   );
@@ -505,7 +511,7 @@ function setupCityAutocomplete(inputEl, onSelect) {
 let savedMessages = [];
 
 async function loadSavedMessages() {
-  savedMessages = await api('GET', '/messages');
+  savedMessages = await storage.getMessages();
   renderSaved();
 }
 
@@ -535,7 +541,7 @@ let queueItems = [];
 let queueCurrentIndex = 0;
 
 async function loadQueue() {
-  queueItems = await api('GET', '/queue/items');
+  queueItems = await storage.getQueueItems();
   renderQueue();
 }
 
@@ -566,7 +572,7 @@ function renderQueue() {
 let worldClockCities = [];
 
 async function loadWorldClockCities() {
-  worldClockCities = await api('GET', '/worldclock/cities');
+  worldClockCities = await storage.getWorldClockCities();
   renderWorldClockCityPicker();
 }
 
@@ -582,7 +588,7 @@ function renderWorldClockCityPicker() {
     cb.type = 'checkbox';
     cb.checked = !!c.is_selected;
     cb.addEventListener('change', async () => {
-      await api('PATCH', '/worldclock/cities/' + c.id, { selected: cb.checked });
+      await storage.updateWorldClockCity(c.id, { selected: cb.checked });
       c.is_selected = cb.checked ? 1 : 0;
     });
     label.appendChild(cb);
@@ -596,7 +602,7 @@ function renderWorldClockCityPicker() {
       removeBtn.addEventListener('mouseover', () => { removeBtn.style.color = 'var(--danger)'; });
       removeBtn.addEventListener('mouseout', () => { removeBtn.style.color = 'var(--text-dim)'; });
       removeBtn.addEventListener('click', async () => {
-        await api('DELETE', '/worldclock/cities/' + c.id);
+        await storage.deleteWorldClockCity(c.id);
         await loadWorldClockCities();
       });
       wrapper.appendChild(removeBtn);
@@ -622,7 +628,7 @@ document.querySelectorAll('.tab').forEach(tab => {
 // --- Text ---
 document.getElementById('btn-send').addEventListener('click', () => {
   const text = document.getElementById('text-input').value;
-  if (text.trim()) api('POST', '/display/text', { text, alignH, alignV, fillColor, borderColor });
+  if (text.trim()) storage.displayText({ text, alignH, alignV, fillColor, borderColor });
 });
 
 document.getElementById('text-input').addEventListener('keydown', (e) => {
@@ -633,7 +639,7 @@ document.getElementById('text-input').addEventListener('keydown', (e) => {
 });
 
 document.getElementById('btn-clear').addEventListener('click', () => {
-  api('POST', '/display/clear');
+  storage.displayClear();
 });
 
 // Color palette - insert codes
@@ -683,12 +689,12 @@ function buildActionSwatches(containerId, onClick) {
 buildActionSwatches('fill-swatches', (code) => {
   fillColor = code === null ? null : (fillColor === code ? null : code);
   updateToolbarIndicator('btn-fill', fillColor);
-  api('PATCH', '/settings', { fillColor: fillColor || '' });
+  storage.updateSettings({ fillColor: fillColor || '' });
 });
 buildActionSwatches('border-swatches', (code) => {
   borderColor = code === null ? null : (borderColor === code ? null : code);
   updateToolbarIndicator('btn-border', borderColor);
-  api('PATCH', '/settings', { borderColor: borderColor || '' });
+  storage.updateSettings({ borderColor: borderColor || '' });
 });
 
 // Insert menu - insert formatting codes at cursor (or line start for alignment codes)
@@ -739,8 +745,8 @@ function wireAlignGroup(id, setter) {
     });
   });
 }
-wireAlignGroup('align-h', v => { alignH = v; api('PATCH', '/settings', { alignH: v }); });
-wireAlignGroup('align-v', v => { alignV = v; api('PATCH', '/settings', { alignV: v }); });
+wireAlignGroup('align-h', v => { alignH = v; storage.updateSettings({ alignH: v }); });
+wireAlignGroup('align-v', v => { alignV = v; storage.updateSettings({ alignV: v }); });
 
 // --- Clock ---
 document.getElementById('btn-clock-start').addEventListener('click', () => {
@@ -748,16 +754,16 @@ document.getElementById('btn-clock-start').addEventListener('click', () => {
   const match = tz.match(/\(([^)]+)\)$/);
   const timezone = match ? match[1] : tz;
   const is24h = document.getElementById('chk-24h').checked;
-  api('POST', '/display/clock', { is24h, timezone });
-  api('PATCH', '/settings', { clockTimezone: timezone });
+  storage.displayClock({ is24h, timezone });
+  storage.updateSettings({ clockTimezone: timezone });
 });
 document.getElementById('btn-clock-queue').addEventListener('click', () => {
-  api('POST', '/queue/items', { type: 'clock', config: '{}' }).then(() => loadQueue());
+  storage.addQueueItem({ type: 'clock', config: '{}' }).then(() => loadQueue());
 });
 
 setupCityAutocomplete(document.getElementById('clock-timezone'), (result) => {
   document.getElementById('clock-timezone').value = result.name + ' (' + result.timezone + ')';
-  api('PATCH', '/settings', { clockTimezone: result.timezone });
+  storage.updateSettings({ clockTimezone: result.timezone });
 });
 
 // --- World Clock ---
@@ -765,10 +771,10 @@ document.getElementById('btn-worldclock-start').addEventListener('click', () => 
   const is24h = document.getElementById('chk-24h').checked;
   const selected = worldClockCities.filter(c => c.is_selected);
   const cities = selected.map(c => ({ city: c.city, tz: c.timezone }));
-  api('POST', '/display/worldclock', { cities, is24h });
+  storage.displayWorldClock({ cities, is24h });
 });
 document.getElementById('btn-worldclock-queue').addEventListener('click', () => {
-  api('POST', '/queue/items', { type: 'worldclock', config: '{}' }).then(() => loadQueue());
+  storage.addQueueItem({ type: 'worldclock', config: '{}' }).then(() => loadQueue());
 });
 document.getElementById('btn-worldclock-random').addEventListener('click', async () => {
   // Select random subset
@@ -778,7 +784,7 @@ document.getElementById('btn-worldclock-random').addEventListener('click', async
   for (const c of worldClockCities) {
     const shouldSelect = toSelect.some(s => s.id === c.id);
     if (!!c.is_selected !== shouldSelect) {
-      await api('PATCH', '/worldclock/cities/' + c.id, { selected: shouldSelect });
+      await storage.updateWorldClockCity(c.id, { selected: shouldSelect });
       c.is_selected = shouldSelect ? 1 : 0;
     }
   }
@@ -791,7 +797,7 @@ document.getElementById('btn-worldclock-add-custom').addEventListener('click', a
   const tz = tzInput.value.trim();
   if (!name || !tz) return;
   try { Intl.DateTimeFormat('en-US', { timeZone: tz }).format(); } catch { alert('Invalid timezone: ' + tz); return; }
-  await api('POST', '/worldclock/cities', { city: name, timezone: tz, isCustom: true });
+  await storage.addWorldClockCity({ city: name, timezone: tz, isCustom: true });
   nameInput.value = '';
   tzInput.value = '';
   await loadWorldClockCities();
@@ -809,7 +815,7 @@ setupCityAutocomplete(document.getElementById('weather-city'), (result) => {
   weatherCity = result.name + (result.admin1 ? ', ' + result.admin1 : '');
   document.getElementById('weather-city').value = weatherCity;
   document.getElementById('weather-status').textContent = 'Found: ' + weatherCity;
-  api('PATCH', '/settings', { weatherLat: String(weatherLat), weatherLon: String(weatherLon), weatherCity });
+  storage.updateSettings({ weatherLat: String(weatherLat), weatherLon: String(weatherLon), weatherCity });
 });
 document.getElementById('btn-weather-locate').addEventListener('click', () => {
   if (!navigator.geolocation) { document.getElementById('weather-status').textContent = 'Geolocation not supported.'; return; }
@@ -821,14 +827,14 @@ document.getElementById('btn-weather-locate').addEventListener('click', () => {
       weatherCity = 'LOCAL';
       document.getElementById('weather-status').textContent = 'Location: ' + weatherLat.toFixed(2) + ', ' + weatherLon.toFixed(2);
       try {
-        const geo = await api('POST', '/weather/location', { lat: weatherLat, lon: weatherLon });
+        const geo = await storage.reverseGeocode(weatherLat, weatherLon);
         if (geo.city) {
           weatherCity = geo.city;
           document.getElementById('weather-city').value = geo.city;
           document.getElementById('weather-status').textContent = 'Location: ' + geo.city;
         }
       } catch {}
-      api('PATCH', '/settings', { weatherLat: String(weatherLat), weatherLon: String(weatherLon), weatherCity });
+      storage.updateSettings({ weatherLat: String(weatherLat), weatherLon: String(weatherLon), weatherCity });
     },
     (err) => { document.getElementById('weather-status').textContent = 'Error: ' + err.message; }
   );
@@ -836,26 +842,26 @@ document.getElementById('btn-weather-locate').addEventListener('click', () => {
 document.getElementById('btn-weather-show').addEventListener('click', () => {
   if (!weatherLat || !weatherLon) { document.getElementById('weather-status').textContent = 'No location set.'; return; }
   document.getElementById('weather-status').textContent = 'Fetching weather...';
-  api('POST', '/display/weather', { city: weatherCity || 'LOCAL', lat: weatherLat, lon: weatherLon, unit: weatherUnit }).then(() => {
+  storage.displayWeather({ city: weatherCity || 'LOCAL', lat: weatherLat, lon: weatherLon, unit: weatherUnit }).then(() => {
     document.getElementById('weather-status').textContent = 'Updated: ' + new Date().toLocaleTimeString();
   }).catch(e => {
     document.getElementById('weather-status').textContent = 'Error: ' + e.message;
   });
 });
 document.getElementById('btn-weather-queue').addEventListener('click', () => {
-  api('POST', '/queue/items', { type: 'weather', config: '{}' }).then(() => loadQueue());
+  storage.addQueueItem({ type: 'weather', config: '{}' }).then(() => loadQueue());
 });
 document.getElementById('weather-unit-f').addEventListener('click', () => {
   weatherUnit = 'F';
   document.getElementById('weather-unit-f').classList.add('active');
   document.getElementById('weather-unit-c').classList.remove('active');
-  api('PATCH', '/settings', { weatherUnit: 'F' });
+  storage.updateSettings({ weatherUnit: 'F' });
 });
 document.getElementById('weather-unit-c').addEventListener('click', () => {
   weatherUnit = 'C';
   document.getElementById('weather-unit-c').classList.add('active');
   document.getElementById('weather-unit-f').classList.remove('active');
-  api('PATCH', '/settings', { weatherUnit: 'C' });
+  storage.updateSettings({ weatherUnit: 'C' });
 });
 
 // --- Saved Messages ---
@@ -864,13 +870,13 @@ document.getElementById('btn-save').addEventListener('click', async () => {
   if (!text.trim()) return;
   const name = prompt('Name for this message:', text.trim().slice(0, 40));
   if (name === null) return;
-  await api('POST', '/messages', { name: name.trim() || 'Untitled', text: text.trim(), alignH, alignV, fillColor, borderColor });
+  await storage.addMessage({ name: name.trim() || 'Untitled', text: text.trim(), alignH, alignV, fillColor, borderColor });
   await loadSavedMessages();
 });
 document.getElementById('btn-queue-text').addEventListener('click', async () => {
   const text = document.getElementById('text-input').value;
   if (!text.trim()) return;
-  await api('POST', '/queue/items', {
+  await storage.addQueueItem({
     type: 'text',
     config: JSON.stringify({ name: text.trim().slice(0, 40), text: text.trim(), alignH, alignV, fillColor, borderColor })
   });
@@ -881,14 +887,14 @@ document.getElementById('saved-list').addEventListener('click', async (e) => {
     const id = parseInt(e.target.dataset.id);
     const entry = savedMessages.find(m => m.id === id);
     if (!entry) return;
-    await api('POST', '/queue/items', {
+    await storage.addQueueItem({
       type: 'text',
       config: JSON.stringify({ name: entry.name, text: entry.text, alignH: entry.align_h, alignV: entry.align_v, fillColor: entry.fill_color, borderColor: entry.border_color })
     });
     await loadQueue();
   } else if (e.target.classList.contains('remove')) {
     const id = parseInt(e.target.dataset.id);
-    await api('DELETE', '/messages/' + id);
+    await storage.deleteMessage(id);
     await loadSavedMessages();
   } else if (e.target.closest('.msg')) {
     const msgEl = e.target.closest('.msg');
@@ -909,7 +915,7 @@ document.getElementById('saved-list').addEventListener('click', async (e) => {
   }
 });
 document.getElementById('btn-saved-clear').addEventListener('click', async () => {
-  await api('DELETE', '/messages/all');
+  await storage.clearMessages();
   await loadSavedMessages();
 });
 
@@ -917,7 +923,7 @@ document.getElementById('btn-saved-clear').addEventListener('click', async () =>
 document.getElementById('queue-list').addEventListener('click', async (e) => {
   if (e.target.classList.contains('remove')) {
     const id = parseInt(e.target.dataset.id);
-    await api('DELETE', '/queue/items/' + id);
+    await storage.deleteQueueItem(id);
     await loadQueue();
   }
 });
@@ -953,7 +959,7 @@ queueList.addEventListener('drop', async (e) => {
   const insertIdx = dragFromIdx < toIdx ? toIdx - 1 : toIdx;
   queueItems.splice(insertIdx, 0, moved);
   const ids = queueItems.map(item => item.id);
-  await api('PUT', '/queue/reorder', { ids });
+  await storage.reorderQueue(ids);
   renderQueue();
   dragFromIdx = null;
 });
@@ -964,49 +970,56 @@ queueList.addEventListener('dragend', () => {
 
 document.getElementById('btn-queue-start').addEventListener('click', () => {
   if (queueRunning) {
-    api('POST', '/queue/stop');
+    storage.stopQueue();
   } else {
-    api('POST', '/queue/start');
+    storage.startQueue();
   }
 });
 document.getElementById('btn-queue-clear').addEventListener('click', async () => {
-  await api('DELETE', '/queue/items/all');
+  await storage.clearQueue();
   await loadQueue();
 });
 document.getElementById('queue-dwell').addEventListener('change', (e) => {
   const val = Math.max(3, parseInt(e.target.value) || 12);
   e.target.value = val;
-  api('PATCH', '/settings', { queueDwellSec: String(val) });
+  storage.updateSettings({ queueDwellSec: String(val) });
 });
 
 // --- Settings ---
 document.getElementById('btn-resize').addEventListener('click', () => {
   const r = Math.max(1, Math.min(12, parseInt(document.getElementById('cfg-rows').value) || 6));
   const c = Math.max(6, Math.min(44, parseInt(document.getElementById('cfg-cols').value) || 22));
-  api('PATCH', '/settings', { rows: String(r), cols: String(c) });
+  storage.updateSettings({ rows: String(r), cols: String(c) });
 });
 document.getElementById('chk-full-flip').addEventListener('change', (e) => {
-  api('PATCH', '/settings', { fullFlip: String(e.target.checked) });
+  storage.updateSettings({ fullFlip: String(e.target.checked) });
 });
 document.getElementById('chk-24h').addEventListener('change', (e) => {
-  api('PATCH', '/settings', { is24h: String(e.target.checked) });
+  storage.updateSettings({ is24h: String(e.target.checked) });
 });
 
-// Sound destination cycle
+// Sound toggle/cycle
 document.getElementById('btn-sound').addEventListener('click', () => {
-  const cycle = ['display', 'admin', 'both', 'off'];
-  const current = settings.soundDestination || 'display';
-  const next = cycle[(cycle.indexOf(current) + 1) % cycle.length];
-  api('PATCH', '/settings', { soundDestination: next });
+  if (window.__STANDALONE__) {
+    // Simple on/off toggle for standalone
+    const current = settings.soundEnabled !== 'false';
+    storage.updateSettings({ soundEnabled: String(!current) });
+  } else {
+    // 4-way cycle for admin (display/admin/both/off)
+    const cycle = ['display', 'admin', 'both', 'off'];
+    const current = settings.soundDestination || 'display';
+    const next = cycle[(cycle.indexOf(current) + 1) % cycle.length];
+    storage.updateSettings({ soundDestination: next });
+  }
 });
 
 // Export / Import
 document.getElementById('btn-export').addEventListener('click', async () => {
   const [s, msgs, items, cities] = await Promise.all([
-    api('GET', '/settings'),
-    api('GET', '/messages'),
-    api('GET', '/queue/items'),
-    api('GET', '/worldclock/cities'),
+    storage.getSettings(),
+    storage.getMessages(),
+    storage.getQueueItems(),
+    storage.getWorldClockCities(),
   ]);
   const exported = {
     version: 1,
@@ -1078,20 +1091,20 @@ importFileInput.addEventListener('change', async (e) => {
       }
       // Import settings
       if (data.settings) {
-        await api('PATCH', '/settings', {
+        await storage.updateSettings({
           rows: String(data.settings.rows || 6),
           cols: String(data.settings.cols || 22),
           fullFlip: String(data.settings.fullFlip ?? true),
         });
       }
       if (data.clock) {
-        await api('PATCH', '/settings', {
+        await storage.updateSettings({
           is24h: String(data.clock.is24h ?? false),
           clockTimezone: data.clock.timezone || '',
         });
       }
       if (data.weather) {
-        await api('PATCH', '/settings', {
+        await storage.updateSettings({
           weatherLat: String(data.weather.lat ?? 'null'),
           weatherLon: String(data.weather.lon ?? 'null'),
           weatherCity: data.weather.city || '',
@@ -1101,8 +1114,8 @@ importFileInput.addEventListener('change', async (e) => {
         });
       }
       if (data.queue) {
-        await api('PATCH', '/settings', { queueDwellSec: String(data.queue.dwellTime || 12) });
-        await api('DELETE', '/queue/items/all');
+        await storage.updateSettings({ queueDwellSec: String(data.queue.dwellTime || 12) });
+        await storage.clearQueue();
         if (Array.isArray(data.queue.items)) {
           for (const item of data.queue.items) {
             if (item.type === 'saved') {
@@ -1111,18 +1124,18 @@ importFileInput.addEventListener('change', async (e) => {
               if (item.alignV) config.alignV = item.alignV;
               if (item.fillColor) config.fillColor = item.fillColor;
               if (item.borderColor) config.borderColor = item.borderColor;
-              await api('POST', '/queue/items', { type: 'text', config: JSON.stringify(config) });
+              await storage.addQueueItem({ type: 'text', config: JSON.stringify(config) });
             } else {
-              await api('POST', '/queue/items', { type: item.type, config: '{}' });
+              await storage.addQueueItem({ type: item.type, config: '{}' });
             }
           }
         }
       }
       // Import saved messages
       if (Array.isArray(data.saved)) {
-        await api('DELETE', '/messages/all');
+        await storage.clearMessages();
         for (const m of data.saved) {
-          await api('POST', '/messages', {
+          await storage.addMessage({
             name: m.name, text: m.text,
             alignH: m.alignH || 'center', alignV: m.alignV || 'middle',
             fillColor: m.fillColor || '', borderColor: m.borderColor || '',
@@ -1131,22 +1144,22 @@ importFileInput.addEventListener('change', async (e) => {
       }
       // Import world clock cities
       if (data.worldClock) {
-        const existing = await api('GET', '/worldclock/cities');
+        const existing = await storage.getWorldClockCities();
         const selectedNames = new Set(data.worldClock.cities || []);
         // Toggle built-in cities to match export; remove existing custom cities
         for (const c of existing) {
           if (c.is_custom) {
-            await api('DELETE', `/worldclock/cities/${c.id}`);
+            await storage.deleteWorldClockCity(c.id);
           } else {
             const shouldSelect = selectedNames.has(c.city);
             if ((!!c.is_selected) !== shouldSelect) {
-              await api('PATCH', `/worldclock/cities/${c.id}`, { selected: shouldSelect });
+              await storage.updateWorldClockCity(c.id, { selected: shouldSelect });
             }
           }
         }
         // Add custom cities from import
         for (const c of (data.worldClock.customCities || [])) {
-          await api('POST', '/worldclock/cities', { city: c.name, timezone: c.tz, isCustom: true });
+          await storage.addWorldClockCity({ city: c.name, timezone: c.tz, isCustom: true });
         }
       }
       // Reload everything
@@ -1176,7 +1189,15 @@ document.addEventListener('visibilitychange', () => {
 });
 
 // --- Initialize ---
-connectWs();
+if (!window.__STANDALONE__) {
+  connectWs();
+} else {
+  // In standalone mode, load initial settings and apply them
+  storage.getSettings().then(s => {
+    settings = s;
+    applySettings(s);
+  });
+}
 loadSavedMessages();
 loadQueue();
 loadWorldClockCities();
